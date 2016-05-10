@@ -7,9 +7,16 @@
             "email": "me@natenolting.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/paulbunyannet/form_mail_template.git"
+        }
+    ],
     "require": {
         "paulbunyannet/premailer": "^1.0",
         "paulbunyannet/bandolier": "^1.0",
         "paulbunyannet/form_mail_template": "^1.0"
-    }
+    },
+    "minimum-stability": "stable"
 }

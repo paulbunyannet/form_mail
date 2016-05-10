@@ -1,0 +1,149 @@
+<?php
+/**
+ * FormMailHelper
+ *
+ * Created 5/9/16 11:08 PM
+ * Helpers for the form mail controller
+ *
+ * @author Nate Nolting <naten@paulbunyan.net>
+ * @package Pbc\FormMail\Helpers
+ */
+
+namespace Pbc\FormMail\Helpers;
+
+use Pbc\Bandolier\Type\Strings;
+use Pbc\Premailer;
+
+/**
+ * Class FormMailHelper
+ * @package Pbc\FormMail\Helpers
+ */
+class FormMailHelper
+{
+    /**
+     * Get and label Geo Location fields if passed
+     *
+     * @param $request
+     * @param array $data
+     */
+    public function geoLocationFields($request, &$data = [])
+    {
+        $geoFields = ['geo_lat', 'geo_long'];
+        foreach ($geoFields as $field) {
+            if ($request->input($field)) {
+                switch ($field) {
+                    case ('geo_lat'):
+                    case ('geo_long'):
+                        $title = \Lang::get('pbc_form_mail::body.' . $field);
+                        break;
+                }
+                $data['fields'][] = $this->prepField($title, $request->input($field));
+            }
+        }
+    }
+
+    /**
+     * @param $label
+     * @param $value
+     * @return array
+     */
+    public function prepField($label, $value)
+    {
+        return ['label' => $label, 'value' => $value];
+    }
+
+    /**
+     * Get branding string
+     *
+     * @param array $data
+     */
+    public function branding(&$data = [])
+    {
+        $branding = \Config::get('form_mail.branding');
+        if ($branding) {
+            $data['branding'] = $branding;
+        } else {
+            $data['branding'] = \Lang::get(
+                'pbc_form_mail::body.branding',
+                [
+                    'form' => Strings::formatForTitle($data['formName']),
+                    'domain' => \Config::get('app.url')
+                ]
+            );
+        }
+    }
+
+    /**
+     * Get form name string
+     *
+     * @return mixed
+     */
+    public function formName()
+    {
+        return preg_replace('/[\s+\-]/', '_', \Route::currentRouteName());
+    }
+
+    /**
+     * Get request inputs and their matching label input
+     *
+     * @param Request $request
+     * @return mixed
+     */
+    public function requestFields($request, &$data)
+    {
+        foreach ($request->input('fields') as $field) {
+            $label = ($request->input($field . '-label') ? $request->input($field . '-label') : Strings::formatForTitle($field));
+            if ($label && $request->input($field)) {
+                $data['fields'][] = $this->prepField($label, $request->input($field));
+            }
+            unset($label);
+        }
+    }
+
+    /**
+     * Set Message Subject
+     *
+     * @param array $data
+     */
+    public function subject(&$data = [])
+    {
+        $data['subject'] = Strings::formatForTitle($this->formName()) . ' Form Submission';
+    }
+
+    /**
+     * @param Premailer $premailer
+     * @param $data
+     * @return array
+     */
+    public function premailer(Premailer $premailer, $data)
+    {
+        // send out message to recipient
+        // try and send the message with layout through Premailer
+        try {
+            $message = $premailer->html(
+                \View::make('pbc_form_mail_template::layout')->with(
+                    'data',
+                    $data
+                )->render()
+            );
+        } catch (\Exception $ex) {
+            $message = [
+                'html' => \View::make('pbc_form_mail_template::layout')->with('data', $data)->render(),
+                'text' => ''
+            ];
+        }
+        
+        return $message;
+    }
+
+    /**
+     * @param $form
+     * @return string
+     */
+    public function recipient($form)
+    {
+        $formName = preg_replace('/[\s+\-]/', '_', $form);
+        return $formName . '@' . str_replace_first('www.', '', parse_url(\Config::get('app.url'), PHP_URL_HOST));
+    }
+
+}

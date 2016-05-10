@@ -1,0 +1,15 @@
+{
+    "name": "paulbunyannet/formmail",
+    "description": "Form to email helper",
+    "authors": [
+        {
+            "name": "Nate Nolting",
+            "email": "me@natenolting.com"
+        }
+    ],
+    "require": {
+        "paulbunyannet/premailer": "^1.0",
+        "paulbunyannet/bandolier": "^1.0",
+        "paulbunyannet/form_mail_template": "^1.0"
+    }
+}

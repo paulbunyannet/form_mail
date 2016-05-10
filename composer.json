@@ -13,6 +13,11 @@
             "url": "https://github.com/paulbunyannet/form_mail_template.git"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "Pbc\\FormMail\\": "src/"
+        }
+    },
     "require": {
         "paulbunyannet/premailer": "^1.0",
         "paulbunyannet/bandolier": "^1.0",

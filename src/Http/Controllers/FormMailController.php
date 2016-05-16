@@ -20,11 +20,7 @@ class FormMailController extends Controller
     /**
      * @var array
      */
-    protected $rules = [
-        'email' => 'required|email',
-        'name' => 'required',
-        'fields' => 'required|array'
-    ];
+    protected $rules = [];
     /**
      * @var Premailer
      */
@@ -38,6 +34,8 @@ class FormMailController extends Controller
     {
         $this->premailer = $premailer;
         $this->helper = $helper;
+        $this->rules = \Config::get('form_mail.rules');
+
     }
 
     /**
@@ -46,7 +44,6 @@ class FormMailController extends Controller
      */
     public function requestHandler(Request $request)
     {
-
         $validator = \Validator::make($request->all(), $this->rules, []);
         if ($validator->fails()) {
             return \Response::json(['error' => $validator->errors()->all()]);
@@ -88,9 +85,6 @@ class FormMailController extends Controller
 
         // branding string
         $this->helper->branding($data);
-
-        // add geo location late, should not go out with response message
-        $this->helper->geoLocationFields($request, $data);
 
         // body of email message
         $data['body'] = \View::make('pbc_form_mail::body')->with('data', $data)->render();

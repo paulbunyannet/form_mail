@@ -13,25 +13,56 @@
 namespace Pbc\FormMail\Tests\Http\Controllers;
 
 use Illuminate\Foundation\Testing\WithoutMiddleware;
-use \Mockery;
+use Mockery;
 
-
+/**
+ * Class FormControllerTest
+ * @package Pbc\FormMail\Tests\Http\Controllers
+ */
 class FormControllerTest extends \TestCase
 {
     use WithoutMiddleware;
 
+    /**
+     * @var
+     */
     protected $faker;
+    /**
+     * @var
+     */
+    protected $configFile;
 
+    /**
+     * Set up test
+     */
     public function setUp()
     {
         parent::setUp();
         $this->faker = \Faker\Factory::create();
+        $this->configFile = config_path('form_mail.php');
     }
 
+    /**
+     * Tear down test
+     */
     public function tearDown()
     {
         parent::tearDown();
         \Mockery::close();
+    }
+
+    /**
+     * This method is called when a test method did not execute successfully.
+     *
+     * @param Exception $e
+     *
+     * @since Method available since Release 3.4.0
+     *
+     * @throws Exception
+     */
+    protected function onNotSuccessfulTest($e)
+    {
+        throw $e;
     }
 
     /**
@@ -44,39 +75,23 @@ class FormControllerTest extends \TestCase
             'name' => $this->faker->name,
             'field1' => $this->faker->paragraph,
             'field2' => $this->faker->paragraph,
-            'fields' => ['field1','field2','email','name']
+            'fields' => ['field1', 'field2', 'email', 'name']
         ];
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
         $this->assertResponseOk();
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('success', $decode);
-        $this->assertContains('Thanks for filling out the Form Mail.Send form,  we will get back to you as soon as possible!', $decode->success[0]);
+        $this->assertContains(
+            'Thanks for filling out the Form Mail.Send form,  we will get back to you as soon as possible!',
+            $decode->success[0]
+        );
         $this->assertContains($parameters['email'], $decode->success[0]);
         $this->assertContains(htmlentities($parameters['name']), $decode->success[0]);
         $this->assertContains($parameters['field1'], $decode->success[0]);
         $this->assertContains($parameters['field2'], $decode->success[0]);
     }
-    /**
-     * @test
-     */
-    public function it_can_submit_form_mail_with_geo_location()
-    {
-        $parameters = [
-            'email' => $this->faker->email,
-            'name' => $this->faker->name,
-            'field1' => $this->faker->paragraph,
-            'field2' => $this->faker->paragraph,
-            'fields' => ['field1','field2','email','name'],
-            'geo_lat' => $this->faker->latitude,
-            'geo_long' => $this->faker->longitude,
-        ];
-        $response = $this->call('POST', 'form-mail/send', $parameters);
-        $this->assertJson($response->getContent());
-        $this->assertResponseOk();
-        $decode = json_decode($response->getContent());
-        $this->assertObjectHasAttribute('success', $decode);
-    }
+
     /**
      * @test
      */
@@ -87,7 +102,7 @@ class FormControllerTest extends \TestCase
             'name' => $this->faker->name,
             'field1' => $this->faker->paragraph,
             'field2' => $this->faker->paragraph,
-            'fields' => ['field1','field2','email','name'],
+            'fields' => ['field1', 'field2', 'email', 'name'],
 
         ];
         \Mail::shouldReceive('send')->once()->withAnyArgs()->andThrowExceptions([new \Exception()]);
@@ -108,7 +123,7 @@ class FormControllerTest extends \TestCase
             'email' => $this->faker->email,
             'field1' => $this->faker->paragraph,
             'field2' => $this->faker->paragraph,
-            'fields' => ['field1','field2','email','name']
+            'fields' => ['field1', 'field2', 'email', 'name']
         ];
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
@@ -159,7 +174,6 @@ class FormControllerTest extends \TestCase
     }
 
 
-
     /**
      * @test
      */
@@ -169,7 +183,7 @@ class FormControllerTest extends \TestCase
             'name' => $this->faker->name,
             'field1' => $this->faker->paragraph,
             'field2' => $this->faker->paragraph,
-            'fields' => ['field1','field2','email','name']
+            'fields' => ['field1', 'field2', 'email', 'name']
         ];
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
@@ -178,6 +192,7 @@ class FormControllerTest extends \TestCase
         $this->assertObjectHasAttribute('error', $decode);
         $this->assertSame(['The email field is required.'], $decode->error);
     }
+
     /**
      * @test
      */
@@ -188,7 +203,7 @@ class FormControllerTest extends \TestCase
             'name' => $this->faker->name,
             'field1' => $this->faker->paragraph,
             'field2' => $this->faker->paragraph,
-            'fields' => ['field1','field2','email','name']
+            'fields' => ['field1', 'field2', 'email', 'name']
         ];
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
@@ -201,30 +216,45 @@ class FormControllerTest extends \TestCase
     /**
      * @test
      */
+    public function it_fails_if_custom_rules_do_not_pass()
+    {
+        $rule = implode('_', $this->faker->words());
+        $original = \Config::get('form_mail.rules');
+        \Config::set('form_mail.rules', [$rule => 'required']);
+        $parameters = [];
+
+        $response = $this->call('POST', 'form-mail/send', $parameters);
+        $this->assertJson($response->getContent());
+        $this->assertResponseOk();
+        $decode = json_decode($response->getContent());
+        $this->assertObjectHasAttribute('error', $decode);
+        $this->assertSame(['The ' . str_replace('_', ' ', $rule) . ' field is required.'], $decode->error);
+        \Config::set('form_mail.rules', $original);
+
+
+    }
+
+
+    /**
+     * @test
+     */
     public function it_will_use_text_branding_if_none_is_set()
     {
         // temp remove the custom config for the form mail controller
-        $configFile = $this->app->basePath() . '/config/form_mail.php';
-        copy($configFile, $configFile.'.tmp');
-        file_put_contents($configFile, '<?php return ["branding" => ""];');
+        //$this->setConfigFile('<?php return ["branding" => ""];');
 
         $parameters = [
             'email' => $this->faker->email,
             'name' => $this->faker->name,
             'field1' => $this->faker->paragraph,
             'field2' => $this->faker->paragraph,
-            'fields' => ['field1','field2','email','name']
+            'fields' => ['field1', 'field2', 'email', 'name']
         ];
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
         $this->assertResponseOk();
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('success', $decode);
-
-        // add the file back
-        unlink($configFile);
-        copy($configFile.'.tmp', $configFile);
-        unlink($configFile.'.tmp');
 
     }
 
@@ -233,15 +263,40 @@ class FormControllerTest extends \TestCase
      */
     public function it_uses_a_generated_string_instead_of_branding()
     {
+        $originalBranding = \Config::get('form_mail.branding');
+        $originalUrl = \Config::get('app.url');
 
-        \Config::shouldReceive('get')->once()->withArgs(['form_mail.branding'])->andReturn(false);
+        \Config::set('form_mail.branding', false);
+
         $url = $this->faker->url;
-        \Config::shouldReceive('get')->once()->withArgs(['app.url'])->andReturn($url);
+        \Config::set('app.url', $url);
+
         $helper = new \Pbc\FormMail\Helpers\FormMailHelper;
         $data = ['formName' => 'form'];
         $helper->branding($data);
-        $this->assertSame($data['branding'], $url.' Form Form');
-        
+        $this->assertSame($data['branding'], $url . ' Form Form');
+
+        \Config::set('form_mail.branding', $originalBranding);
+        \Config::set('app.url', $originalUrl);
+
+    }
+
+    /**
+     * @test
+     */
+    public function it_uses_a_provided_branding()
+    {
+        $originalBranding = \Config::get('form_mail.branding');
+        $branding = '<img src="http://placehold.it/350x150">';
+        \Config::set('form_mail.branding', $branding);
+
+        $helper = new \Pbc\FormMail\Helpers\FormMailHelper;
+        $data = ['formName' => 'form'];
+        $helper->branding($data);
+        $this->assertSame($data['branding'], $branding);
+
+        \Config::set('form_mail.branding', $originalBranding);
+
     }
 
     /**

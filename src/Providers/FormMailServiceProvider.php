@@ -13,9 +13,12 @@ class FormMailServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // load translations
         $this->loadTranslationsFrom(dirname(__DIR__) . '/Resources/Lang', 'pbc_form_mail');
+        // load views
         $this->loadViewsFrom(dirname(__DIR__) . '/Resources/Views', 'pbc_form_mail');
-        $this->mergeConfigFrom(dirname(__DIR__) .'/Config/FormMail.php', 'form_mail');
+        // publish the config
+        $this->publishes([dirname(__DIR__) .'/Config/FormMail.php' => config_path('form_mail.php')]);
     }
 
     /**

@@ -1,4 +1,10 @@
 <?php
 return [
-    'branding' => ''
+    'branding' => '',
+    'rules' => [
+        'email' => 'required|email',
+        'name' => 'required',
+        'fields' => 'required|array'
+    ],
+    'queue' => false
 ];

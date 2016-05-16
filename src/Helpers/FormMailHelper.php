@@ -21,28 +21,6 @@ use Pbc\Premailer;
 class FormMailHelper
 {
     /**
-     * Get and label Geo Location fields if passed
-     *
-     * @param $request
-     * @param array $data
-     */
-    public function geoLocationFields($request, &$data = [])
-    {
-        $geoFields = ['geo_lat', 'geo_long'];
-        foreach ($geoFields as $field) {
-            if ($request->input($field)) {
-                switch ($field) {
-                    case ('geo_lat'):
-                    case ('geo_long'):
-                        $title = \Lang::get('pbc_form_mail::body.' . $field);
-                        break;
-                }
-                $data['fields'][] = $this->prepField($title, $request->input($field));
-            }
-        }
-    }
-
-    /**
      * @param $label
      * @param $value
      * @return array
@@ -132,7 +110,7 @@ class FormMailHelper
                 'text' => ''
             ];
         }
-        
+
         return $message;
     }
 
@@ -145,5 +123,4 @@ class FormMailHelper
         $formName = preg_replace('/[\s+\-]/', '_', $form);
         return $formName . '@' . str_replace_first('www.', '', parse_url(\Config::get('app.url'), PHP_URL_HOST));
     }
-
 }

@@ -10,16 +10,27 @@
          stopOnFailure="false"
          syntaxCheck="false"
         >
-
     <filter>
         <whitelist>
             <directory>src</directory>
+            <exclude>
+                <directory suffix=".php">src/Config</directory>
+                <directory suffix=".php">src/Resources</directory>
+            </exclude>
         </whitelist>
     </filter>
-
     <testsuites>
         <testsuite name="AutoVersion Test Suite">
             <directory suffix=".php">tests</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_URL" value="http://laravelpackages.local"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_DRIVER" value="sync"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+    </php>
 </phpunit>

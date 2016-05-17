@@ -23,11 +23,12 @@ class FormMailHelper
     /**
      * @param $label
      * @param $value
+     * @param null $field
      * @return array
      */
-    public function prepField($label, $value)
+    public function prepField($label, $value, $field = null)
     {
-        return ['label' => $label, 'value' => $value];
+        return ['label' => $label, 'value' => $value, 'field' => $field];
     }
 
     /**
@@ -72,7 +73,7 @@ class FormMailHelper
         foreach ($request->input('fields') as $field) {
             $label = ($request->input($field . '-label') ? $request->input($field . '-label') : Strings::formatForTitle($field));
             if ($label && $request->input($field)) {
-                $data['fields'][] = $this->prepField($label, $request->input($field));
+                $data['fields'][] = $this->prepField($label, $request->input($field), $field);
             }
             unset($label);
         }

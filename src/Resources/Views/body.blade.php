@@ -12,8 +12,8 @@
         @if( ! empty($data['fields']))
             @foreach ($data['fields'] as $field)
                 <tr>
-                    <td class="question text-left" id="{{ str_slug($field['label']) }}-response-label">{{ $field['label'] }}</td>
-                    <td class="answer text-right" id="{{ str_slug($field['label']) }}-response-value">
+                    <td class="question text-left" id="{{ ($field['field']) ? (str_slug($field['field'])) : (str_slug($field['label'])) }}-response-label">{{ $field['label'] }}</td>
+                    <td class="answer text-right" id="{{ ($field['field']) ? (str_slug($field['field'])) : (str_slug($field['label'])) }}-response-value">
                         @if (is_array($field['value']))
                             <ul>
                                 @for ($i=0; $i < count($field); $i++)

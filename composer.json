@@ -16,10 +16,7 @@
     "autoload": {
         "psr-4": {
             "Pbc\\FormMail\\": "src/"
-        },
-        "classmap":[
-            "vendor/paulbunyannet/form_mail_template/src"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {

@@ -65,7 +65,7 @@ class FormMailController extends Controller
         $this->helper->requestFields($request, $data);
 
         // headline for return response
-        $data['head'] = \Lang::get('pbc_form_mail::body.success', [
+        $data['head'] = \Lang::get('pbc_form_mail::body.'.\Route::currentRouteName(), [
             'form' => Strings::formatForTitle($data['formName']),
             'recipient' => $data['recipient'],
         ]);

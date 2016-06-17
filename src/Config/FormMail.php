@@ -6,5 +6,6 @@ return [
         'name' => 'required',
         'fields' => 'required|array'
     ],
-    'queue' => false
+    'queue' => false,
+    'confirmation' => false,
 ];

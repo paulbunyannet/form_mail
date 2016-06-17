@@ -38,6 +38,7 @@ class FormControllerTest extends \TestCase
     public function setUp()
     {
         parent::setUp();
+        exec('php artisan migrate:refresh');
         $this->faker = \Faker\Factory::create();
         $this->configFile = config_path('form_mail.php');
     }
@@ -66,6 +67,105 @@ class FormControllerTest extends \TestCase
     }
 
     /**
+     * Tests to see if queue is turned on and confirmation is not that
+     * there will be a record in jobs for FormMailSendMessage but
+     * not FormMailSendConfirmationMessage
+     * @test
+     */
+    public function it_will_queue_to_recipient_but_not_queue_confirmation()
+    {
+        $this->updateConfigForQueueAndConformation(true, false);
+        $parameters = [
+            'email' => $this->faker->email,
+            'name' => $this->faker->name,
+            'field1' => $this->faker->paragraph,
+            'field2' => $this->faker->paragraph,
+            'fields' => ['field1', 'field2', 'email', 'name']
+        ];
+        $this->call('POST', 'form-mail/send', $parameters);
+
+        $sender = \DB::table('jobs')->where('payload', 'like', '%FormMailSendMessage%');
+        $this->assertSame($sender->count(), 1);
+
+        $confirmer = \DB::table('jobs')->where('payload', 'like', '%FormMailSendConfirmationMessage%');
+        $this->assertSame($confirmer->count(), 0);
+        
+        $this->resetOriginalConfiguration();
+
+    }
+
+    /**
+     * Tests to see if queue is turned on and confirmation is set that
+     * there will be a record in jobs for FormMailSendMessage and
+     * FormMailSendConfirmationMessage.
+     * @test
+     */
+    public function it_will_queue_to_recipient_and_queue_confirmation()
+    {
+        $this->updateConfigForQueueAndConformation(true, true);
+
+        $parameters = [
+            'email' => $this->faker->email,
+            'name' => $this->faker->name,
+            'field1' => $this->faker->paragraph,
+            'field2' => $this->faker->paragraph,
+            'fields' => ['field1', 'field2', 'email', 'name']
+        ];
+        $this->call('POST', 'form-mail/send', $parameters);
+
+        $sender = \DB::table('jobs')->where('payload', 'like', '%FormMailSendMessage%');
+        $this->assertSame($sender->count(), 1);
+
+        $confirmer = \DB::table('jobs')->where('payload', 'like', '%FormMailSendConfirmationMessage%');
+        $this->assertSame($confirmer->count(), 1);
+
+        $this->resetOriginalConfiguration();
+
+    }
+
+
+    /**
+     * Tests to see if queue is turned off and confirmation is not that
+     * there will not be a record in jobs for FormMailSendMessage or
+     * FormMailSendConfirmationMessage. There will be a record
+     * in the form_mail db for this message that will be
+     * marked as sent, but no confirmation will be sent
+     * @test
+     */
+    public function it_will_send_right_away_but_not_send_confirmation()
+    {
+        $this->updateConfigForQueueAndConformation(false, false);
+
+        $parameters = [
+            'email' => $this->faker->email,
+            'name' => $this->faker->name,
+            'field1' => $this->faker->paragraph,
+            'field2' => $this->faker->paragraph,
+            'fields' => ['field1', 'field2', 'email', 'name']
+        ];
+        $this->call('POST', 'form-mail/send', $parameters);
+
+        $this->resetOriginalConfiguration();
+
+        $sender = \DB::table('jobs')->where('payload', 'like', '%FormMailSendMessage%');
+        $this->assertSame($sender->count(), 0);
+
+        $confirmer = \DB::table('jobs')->where('payload', 'like', '%FormMailSendConfirmationMessage%');
+        $this->assertSame($confirmer->count(), 0);
+
+        $sent = \DB::table('form_mail')->where(
+            [
+                [ 'sender', '=', $parameters['email'] ],
+                [ 'message_sent_to_recipient', '=', 1 ],
+                [ 'confirmation_sent_to_sender', '=', '']
+            ]
+        );
+        $this->assertSame($sent->count(), 1);
+
+
+    }
+
+    /**
      * @test
      */
     public function it_can_submit_form_mail()
@@ -87,7 +187,7 @@ class FormControllerTest extends \TestCase
             $decode->success[0]
         );
         $this->assertContains($parameters['email'], $decode->success[0]);
-        $this->assertContains(htmlentities($parameters['name']), $decode->success[0]);
+        $this->assertContains(htmlspecialchars($parameters['name'], ENT_QUOTES), $decode->success[0]);
         $this->assertContains($parameters['field1'], $decode->success[0]);
         $this->assertContains($parameters['field2'], $decode->success[0]);
     }
@@ -97,6 +197,8 @@ class FormControllerTest extends \TestCase
      */
     public function it_can_submit_but_throws_an_error_when_sending_message()
     {
+        $this->updateConfigForQueueAndConformation(false, false);
+        
         $parameters = [
             'email' => $this->faker->email,
             'name' => $this->faker->name,
@@ -111,6 +213,8 @@ class FormControllerTest extends \TestCase
         $this->assertResponseOk();
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('error', $decode);
+        
+        $this->resetOriginalConfiguration();
     }
 
 
@@ -322,7 +426,26 @@ class FormControllerTest extends \TestCase
         $this->assertContains($data['branding'], $message['html']);
         $this->assertContains($data['body'], $message['html']);
         $this->assertContains($data['footer'], $message['html']);
+    }
 
+    /**
+     * Update configuration with queue and confirmation status
+     *
+     * @param $queue
+     * @param $confirmation
+     */
+    private function updateConfigForQueueAndConformation($queue, $confirmation)
+    {
+        config(['form_mail.queue' => $queue]);
+        config(['form_mail.confirmation' => $confirmation]);
+    }
 
+    /**
+     * Reset configuration back to original
+     */
+    private function resetOriginalConfiguration()
+    {
+        config(['form_mail.queue' => true]);
+        config(['form_mail.confirmation' => false]);
     }
 }

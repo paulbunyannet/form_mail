@@ -1,11 +1,12 @@
 <?php
 return [
     'branding' => '',
-    'rules' => [
-        'email' => 'required|email',
-        'name' => 'required',
-        'fields' => 'required|array'
+    'rules' => [],
+    'route_rules' => [
+        'form-mail' => [
+            'send' => []
+        ],
     ],
-    'queue' => false,
+    'queue' => true,
     'confirmation' => false,
 ];

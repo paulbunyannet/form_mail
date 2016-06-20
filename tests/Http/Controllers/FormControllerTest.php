@@ -67,6 +67,94 @@ class FormControllerTest extends \TestCase
     }
 
     /**
+     * Test that even if a string is passed to the
+     * message_to_sender field is gets formatted
+     * as an json list in the array and parsed
+     * when called.
+     *
+     * @test
+     */
+    public function if_sets_message_to_recipient_as_json_array_if_passed_as_string()
+    {
+        $message = $this->faker->paragraph;
+        $form = new \Pbc\FormMail\FormMail();
+        $form->message_to_recipient = $message;
+        $this->assertSame($form->message_to_recipient, ['html' => $message]);
+    }
+
+    /**
+     * Test that even if a string is passed to the
+     * message_to_sender field is gets formatted
+     * as an json list in the array and parsed
+     * when called.
+     *
+     * @test
+     */
+    public function if_sets_message_to_sender_as_json_array_if_passed_as_string()
+    {
+        $message = $this->faker->paragraph;
+        $form = new \Pbc\FormMail\FormMail();
+        $form->message_to_sender = $message;
+        $this->assertSame($form->message_to_sender, ['html' => $message]);
+    }
+
+    /**
+     * The form can be submitted with a post call to
+     * the form handler and recipient will get a
+     * message sent to them.
+     *
+     * @test
+     */
+    public function it_sends_out_messages_from_job_to_recipient()
+    {
+        $this->updateConfigForQueueAndConfirmation(true, false);
+        $parameters = $this->fields();
+
+        $this->call('POST', 'form-mail/send', $parameters);
+
+        $formMail = \Pbc\FormMail\FormMail::where('sender', $parameters['email'])->first();
+        \Mail::shouldReceive('send')->once()->withAnyArgs()->andReturn(true);
+        $this->expectsJobs(\Pbc\FormMail\Jobs\FormMailSendMessage::class);
+        $job = new \Pbc\FormMail\Jobs\FormMailSendMessage($formMail);
+        app('\Illuminate\Contracts\Bus\Dispatcher')->dispatch($job);
+        $job->handle();
+
+        $this->assertSame(1, $formMail->message_sent_to_recipient);
+
+        // reset
+        $this->unsetBinding('\Illuminate\Contracts\Bus\Dispatcher');
+        $this->resetOriginalConfiguration();
+    }
+
+    /**
+     * The form can be submitted with a post call to
+     * the form handler and recipient will get a
+     * message sent to them.
+     *
+     * @test
+     */
+    public function it_sends_out_messages_from_job_to_sender_confirmation()
+    {
+        $this->updateConfigForQueueAndConfirmation(true, true);
+        $parameters = $this->fields();
+
+        $this->call('POST', 'form-mail/send', $parameters);
+
+        $formMail = \Pbc\FormMail\FormMail::where('sender', $parameters['email'])->first();
+        \Mail::shouldReceive('send')->times(1)->withAnyArgs()->andReturn(true);
+        $this->expectsJobs(\Pbc\FormMail\Jobs\FormMailSendConfirmationMessage::class);
+        $job = new \Pbc\FormMail\Jobs\FormMailSendConfirmationMessage($formMail);
+        app('\Illuminate\Contracts\Bus\Dispatcher')->dispatch($job);
+        $job->handle();
+
+        $this->assertSame(1, $formMail->confirmation_sent_to_sender);
+
+        // reset
+        $this->unsetBinding('\Illuminate\Contracts\Bus\Dispatcher');
+        $this->resetOriginalConfiguration();
+    }
+
+    /**
      * Tests to see if queue is turned on and confirmation is not that
      * there will be a record in jobs for FormMailSendMessage but
      * not FormMailSendConfirmationMessage
@@ -74,14 +162,8 @@ class FormControllerTest extends \TestCase
      */
     public function it_will_queue_to_recipient_but_not_queue_confirmation()
     {
-        $this->updateConfigForQueueAndConformation(true, false);
-        $parameters = [
-            'email' => $this->faker->email,
-            'name' => $this->faker->name,
-            'field1' => $this->faker->paragraph,
-            'field2' => $this->faker->paragraph,
-            'fields' => ['field1', 'field2', 'email', 'name']
-        ];
+        $this->updateConfigForQueueAndConfirmation(true, false);
+        $parameters = $this->fields();
         $this->call('POST', 'form-mail/send', $parameters);
 
         $sender = \DB::table('jobs')->where('payload', 'like', '%FormMailSendMessage%');
@@ -89,7 +171,7 @@ class FormControllerTest extends \TestCase
 
         $confirmer = \DB::table('jobs')->where('payload', 'like', '%FormMailSendConfirmationMessage%');
         $this->assertSame($confirmer->count(), 0);
-        
+
         $this->resetOriginalConfiguration();
 
     }
@@ -102,15 +184,9 @@ class FormControllerTest extends \TestCase
      */
     public function it_will_queue_to_recipient_and_queue_confirmation()
     {
-        $this->updateConfigForQueueAndConformation(true, true);
+        $this->updateConfigForQueueAndConfirmation(true, true);
 
-        $parameters = [
-            'email' => $this->faker->email,
-            'name' => $this->faker->name,
-            'field1' => $this->faker->paragraph,
-            'field2' => $this->faker->paragraph,
-            'fields' => ['field1', 'field2', 'email', 'name']
-        ];
+        $parameters = $this->fields();
         $this->call('POST', 'form-mail/send', $parameters);
 
         $sender = \DB::table('jobs')->where('payload', 'like', '%FormMailSendMessage%');
@@ -134,15 +210,9 @@ class FormControllerTest extends \TestCase
      */
     public function it_will_send_right_away_but_not_send_confirmation()
     {
-        $this->updateConfigForQueueAndConformation(false, false);
+        $this->updateConfigForQueueAndConfirmation(false, false);
 
-        $parameters = [
-            'email' => $this->faker->email,
-            'name' => $this->faker->name,
-            'field1' => $this->faker->paragraph,
-            'field2' => $this->faker->paragraph,
-            'fields' => ['field1', 'field2', 'email', 'name']
-        ];
+        $parameters = $this->fields();
         $this->call('POST', 'form-mail/send', $parameters);
 
         $this->resetOriginalConfiguration();
@@ -155,9 +225,9 @@ class FormControllerTest extends \TestCase
 
         $sent = \DB::table('form_mail')->where(
             [
-                [ 'sender', '=', $parameters['email'] ],
-                [ 'message_sent_to_recipient', '=', 1 ],
-                [ 'confirmation_sent_to_sender', '=', '']
+                ['sender', '=', $parameters['email']],
+                ['message_sent_to_recipient', '=', 1],
+                ['confirmation_sent_to_sender', '=', '']
             ]
         );
         $this->assertSame($sent->count(), 1);
@@ -166,17 +236,48 @@ class FormControllerTest extends \TestCase
     }
 
     /**
+     * Tests to see if queue is turned off and confirmation is on that
+     * there will not be a record in jobs for FormMailSendMessage or
+     * FormMailSendConfirmationMessage. There will be a record
+     * in the form_mail db for this message that will be
+     * marked as sent and confirmation will be sent
+     * @test
+     */
+    public function it_will_send_right_away_and_send_confirmation()
+    {
+        $this->updateConfigForQueueAndConfirmation(false, true);
+
+        $parameters = $this->fields();
+        $this->call('POST', 'form-mail/send', $parameters);
+
+        $this->resetOriginalConfiguration();
+
+        $sender = \DB::table('jobs')->where('payload', 'like', '%FormMailSendMessage%');
+        $this->assertSame($sender->count(), 0);
+
+        $confirmer = \DB::table('jobs')->where('payload', 'like', '%FormMailSendConfirmationMessage%');
+        $this->assertSame($confirmer->count(), 0);
+
+        $sent = \DB::table('form_mail')->where(
+            [
+                ['sender', '=', $parameters['email']],
+                ['message_sent_to_recipient', '=', 1],
+                ['confirmation_sent_to_sender', '=', 1]
+            ]
+        );
+        $this->assertSame($sent->count(), 1);
+
+
+    }
+
+    /**
+     * The form can be submitted with a post call to the form handler
+     *
      * @test
      */
     public function it_can_submit_form_mail()
     {
-        $parameters = [
-            'email' => $this->faker->email,
-            'name' => $this->faker->name,
-            'field1' => $this->faker->paragraph,
-            'field2' => $this->faker->paragraph,
-            'fields' => ['field1', 'field2', 'email', 'name']
-        ];
+        $parameters = $this->fields();
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
         $this->assertResponseOk();
@@ -193,32 +294,56 @@ class FormControllerTest extends \TestCase
     }
 
     /**
+     * The form handler will return an error if
+     * mail returns an exception and we're
+     * trying to send out the message
+     * right away.
+     *
      * @test
      */
-    public function it_can_submit_but_throws_an_error_when_sending_message()
+    public function it_can_submit_but_throws_an_error_when_sending_message_right_way()
     {
-        $this->updateConfigForQueueAndConformation(false, false);
-        
-        $parameters = [
-            'email' => $this->faker->email,
-            'name' => $this->faker->name,
-            'field1' => $this->faker->paragraph,
-            'field2' => $this->faker->paragraph,
-            'fields' => ['field1', 'field2', 'email', 'name'],
+        $this->updateConfigForQueueAndConfirmation(false, false);
 
-        ];
+        $parameters = $this->fields();
         \Mail::shouldReceive('send')->once()->withAnyArgs()->andThrowExceptions([new \Exception()]);
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
         $this->assertResponseOk();
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('error', $decode);
-        
+
+        $this->resetOriginalConfiguration();
+    }
+
+    /**
+     * The form handler will return an error if when sending
+     * right away the send to recipient passes but fails
+     * when trying to sent confirmation to sender.
+     *
+     * @test
+     */
+    public function it_can_submit_but_throws_an_error_when_sending_confirmation_right_way()
+    {
+        $this->updateConfigForQueueAndConfirmation(false, true);
+
+        $parameters = $this->fields();
+        \Mail::shouldReceive('send')->once()->ordered()->withAnyArgs()->andReturn([true]);
+        \Mail::shouldReceive('send')->once()->ordered()->withAnyArgs()->andThrowExceptions([new \Exception()]);
+        $response = $this->call('POST', 'form-mail/send', $parameters);
+        $this->assertJson($response->getContent());
+        $this->assertResponseOk();
+        $decode = json_decode($response->getContent());
+        $this->assertObjectHasAttribute('error', $decode);
+
         $this->resetOriginalConfiguration();
     }
 
 
     /**
+     * The form handler will return an error if
+     * the name field is missing.
+     *
      * @test
      */
     public function it_fails_if_name_field_is_missing()
@@ -239,6 +364,9 @@ class FormControllerTest extends \TestCase
 
 
     /**
+     * The form handler will return an error
+     * if the fields field is missing.
+     *
      * @test
      */
     public function it_fails_if_fields_field_is_missing()
@@ -258,6 +386,9 @@ class FormControllerTest extends \TestCase
     }
 
     /**
+     * The form handler will return an error
+     * if the fields field is not an array.
+     *
      * @test
      */
     public function it_fails_if_fields_field_is_not_an_array()
@@ -279,6 +410,9 @@ class FormControllerTest extends \TestCase
 
 
     /**
+     * The form handler will return an error
+     * if the email field is missing.
+     *
      * @test
      */
     public function it_fails_to_send_if_email_is_missing()
@@ -298,6 +432,9 @@ class FormControllerTest extends \TestCase
     }
 
     /**
+     * The form handler will return an error
+     * if the email field is an invalid email address.
+     *
      * @test
      */
     public function it_fails_to_send_if_email_is_invalid()
@@ -318,6 +455,9 @@ class FormControllerTest extends \TestCase
     }
 
     /**
+     * The form handler will return an error
+     * if custom rule doesn't pass.
+     *
      * @test
      */
     public function it_fails_if_custom_rules_do_not_pass()
@@ -325,7 +465,7 @@ class FormControllerTest extends \TestCase
         $rule = implode('_', $this->faker->words());
         $original = \Config::get('form_mail.rules');
         \Config::set('form_mail.rules', [$rule => 'required']);
-        $parameters = [];
+        $parameters = $this->fields();
 
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
@@ -334,12 +474,12 @@ class FormControllerTest extends \TestCase
         $this->assertObjectHasAttribute('error', $decode);
         $this->assertSame(['The ' . str_replace('_', ' ', $rule) . ' field is required.'], $decode->error);
         \Config::set('form_mail.rules', $original);
-
-
     }
 
 
     /**
+     * It will use a string for branding if
+     * none is setup in the configuration.
      * @test
      */
     public function it_will_use_text_branding_if_none_is_set()
@@ -363,6 +503,8 @@ class FormControllerTest extends \TestCase
     }
 
     /**
+     * It will use a generated string for branding if
+     * none is setup in the configuration.
      * @test
      */
     public function it_uses_a_generated_string_instead_of_branding()
@@ -386,6 +528,9 @@ class FormControllerTest extends \TestCase
     }
 
     /**
+     * The form handler will use a branding
+     * string if set in config.
+     *
      * @test
      */
     public function it_uses_a_provided_branding()
@@ -404,6 +549,8 @@ class FormControllerTest extends \TestCase
     }
 
     /**
+     * Premailer api will still return html if it returns an exception.
+     *
      * @test
      */
     public function premailer_will_still_return_html_if_api_fails()
@@ -428,13 +575,14 @@ class FormControllerTest extends \TestCase
         $this->assertContains($data['footer'], $message['html']);
     }
 
+
     /**
      * Update configuration with queue and confirmation status
      *
      * @param $queue
      * @param $confirmation
      */
-    private function updateConfigForQueueAndConformation($queue, $confirmation)
+    private function updateConfigForQueueAndConfirmation($queue, $confirmation)
     {
         config(['form_mail.queue' => $queue]);
         config(['form_mail.confirmation' => $confirmation]);
@@ -447,5 +595,30 @@ class FormControllerTest extends \TestCase
     {
         config(['form_mail.queue' => true]);
         config(['form_mail.confirmation' => false]);
+    }
+
+    /**
+     * Basic fields
+     *
+     * @return array
+     */
+    private function fields()
+    {
+        return [
+            'email' => $this->faker->email,
+            'name' => $this->faker->name,
+            'field1' => $this->faker->paragraph,
+            'field2' => $this->faker->paragraph,
+            'fields' => ['field1', 'field2', 'email', 'name']
+        ];
+
+    }
+
+    private function unsetBinding($string)
+    {
+        $bindings = $this->app->getBindings();
+        if (in_array($string, $bindings)) {
+            unset($this->app->bindings[$string]);
+        }
     }
 }

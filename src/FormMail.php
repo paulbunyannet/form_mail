@@ -51,19 +51,38 @@ class FormMail extends Model
      * @param $value
      * @return string
      */
-    public function setMessageAttribute($value)
+    public function setMessageToRecipientAttribute($value)
     {
         if (is_string($value)) {
             $value = ['html' => $value];
         }
-        $this->attributes['message'] = json_encode($value);
+        $this->attributes['message_to_recipient'] = json_encode($value);
     }
 
     /**
      * @return array
      */
-    public function getMessageAttribute()
+    public function getMessageToRecipientAttribute()
     {
-        return json_decode($this->attributes['message'], true);
+        return json_decode($this->attributes['message_to_recipient'], true);
+    }
+    /**
+     * @param $value
+     * @return string
+     */
+    public function setMessageToSenderAttribute($value)
+    {
+        if (is_string($value)) {
+            $value = ['html' => $value];
+        }
+        $this->attributes['message_to_sender'] = json_encode($value);
+    }
+
+    /**
+     * @return array
+     */
+    public function getMessageToSenderAttribute()
+    {
+        return json_decode($this->attributes['message_to_sender'], true);
     }
 }

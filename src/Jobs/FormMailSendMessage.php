@@ -29,16 +29,16 @@ class FormMailSendMessage extends Job implements ShouldQueue
      *
      * @return void
      */
-    public function handle(Mailer $mailer)
+    public function handle()
     {
         if (!$this->formMail->message_sent_to_recipient) {
-            $mailer->send('pbc_form_mail_template::body', ['data' => $this->formMail->message], function ($message) {
+            \Mail::send('pbc_form_mail_template::body', ['data' => $this->formMail->message_to_recipient], function ($message) {
                 $message->to($this->formMail->recipient)
                     ->from($this->formMail->sender)
                     ->subject($this->formMail->subject);
             });
 
-            $this->formMail->message_sent_to_recipient = true;
+            $this->formMail->message_sent_to_recipient = 1;
             $this->formMail->save();
         }
     }

@@ -21,6 +21,9 @@ class FormMailServiceProvider extends ServiceProvider
         $this->publishes([dirname(__DIR__) .'/Config/FormMail.php' => config_path('form_mail.php')], 'config');
         // publish the migrations
         $this->publishes([realpath(dirname(dirname(__DIR__))) . '/database/migrations' => $this->app->databasePath() . '/migrations'], 'migrations');
+
+        // publish the language file
+        $this->publishes([realpath(dirname(dirname(__DIR__))) . '/src/Resources/Lang' => $this->app->basePath() . '/resources/lang/vendor/pbc_form_mail/'], 'language');
     }
 
     /**

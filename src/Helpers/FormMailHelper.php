@@ -124,4 +124,5 @@ class FormMailHelper
         $formName = preg_replace('/[\s+\-]/', '_', $form);
         return $formName . '@' . str_replace_first('www.', '', parse_url(\Config::get('app.url'), PHP_URL_HOST));
     }
+    
 }

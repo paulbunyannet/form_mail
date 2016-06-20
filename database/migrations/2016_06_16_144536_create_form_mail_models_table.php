@@ -30,8 +30,11 @@ class CreateFormMailModelsTable extends Migration
             // fields from form submission
             $table->text('fields');
             
-            // body of message to send
-            $table->text('message');
+            // body of message to send to recipient
+            $table->text('message_to_recipient');
+            
+            // body of message to send to recipient
+            $table->text('message_to_sender');
             
             // subject of message
             $table->string('subject');

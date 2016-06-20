@@ -22,7 +22,11 @@ class FormMailController extends Controller
     /**
      * @var array
      */
-    protected $rules = [];
+    protected $rules = [
+        'email' => 'required|email',
+        'name' => 'required',
+        'fields' => 'required|array'
+    ];
     /**
      * @var Premailer
      */
@@ -36,7 +40,8 @@ class FormMailController extends Controller
     {
         $this->premailer = $premailer;
         $this->helper = $helper;
-        $this->rules = \Config::get('form_mail.rules');
+        $this->prepRules();
+
 
     }
 
@@ -50,7 +55,7 @@ class FormMailController extends Controller
             'queue' => config('form_mail.queue'),
             'confirmation' => config('form_mail.confirmation'),
         ];
-        
+
         $validator = \Validator::make($request->all(), $this->rules, []);
         if ($validator->fails()) {
             $return['error'] = $validator->errors()->all();
@@ -62,7 +67,7 @@ class FormMailController extends Controller
 
         /** @var string $form name of form from route name */
         $data['formName'] = $this->helper->formName();
-        
+
         // create recipient from the form name and the current host
         $data['recipient'] = $this->helper
             ->recipient(\Route::currentRouteName());
@@ -76,7 +81,7 @@ class FormMailController extends Controller
 
         // headline for return response
         $data['head'] = \Lang::get(
-            'pbc_form_mail::body.' . \Route::currentRouteName(),
+            'pbc_form_mail::body.' . \Route::currentRouteName() . '.confirmation',
             [
                 'form' => Strings::formatForTitle($data['formName']),
                 'recipient' => $data['recipient'],
@@ -91,41 +96,22 @@ class FormMailController extends Controller
         // email message subject
         $this->helper->subject($data);
 
-        // headline for email message
-        $data['head'] = \Lang::get(
-            'pbc_form_mail::body.recipient-success',
-            [
-                'form' => Strings::formatForTitle($data['formName']),
-                'domain' => parse_url(
-                    \App::make('url')->to('/'),
-                    PHP_URL_HOST
-                ),
-                'time' => Carbon::now()
-            ]
-        );
-
         // branding string
         $this->helper->branding($data);
 
-        // body of email message
-        $data['body'] = \View::make('pbc_form_mail::body')
-            ->with('data', $data)
-            ->render();
-
-        $message = $this->helper->premailer($this->premailer, $data);
-
         // make record in formMail model
-        
+
         $formMailModel = new \Pbc\FormMail\FormMail();
         $formMailModel->form = $data['formName'];
         $formMailModel->resource = $data['resource'];
         $formMailModel->sender = $request->input('email');
         $formMailModel->recipient = $data['recipient'];
         $formMailModel->fields = $data['fields'];
-        $formMailModel->message = $message;
         $formMailModel->subject = $data['subject'];
         $formMailModel->message_sent_to_recipient = false;
         $formMailModel->confirmation_sent_to_sender = false;
+        $formMailModel->message_to_recipient = $this->messageToRecipient($formMailModel);
+        $formMailModel->message_to_sender = $this->messageToSender($formMailModel);
         $formMailModel->save();
 
         // if we should be queueing this message and confirmation,
@@ -149,11 +135,11 @@ class FormMailController extends Controller
 
     /**
      * Send messages out to recipients
-     * 
+     *
      * @param \Pbc\FormMail\FormMail $formMailModel
      * @throws \Exception
      */
-    private function send(\Pbc\FormMail\FormMail $formMailModel)
+    public function send(\Pbc\FormMail\FormMail $formMailModel)
     {
 
         // try and email out the message to the recipient.
@@ -162,7 +148,7 @@ class FormMailController extends Controller
         try {
             \Mail::send(
                 'pbc_form_mail_template::body',
-                ['data' => $formMailModel->message],
+                ['data' => $formMailModel->message_to_recipient],
                 function ($message) use ($formMailModel) {
                     $message->to($formMailModel->recipient)
                         ->subject($formMailModel->subject)
@@ -173,33 +159,14 @@ class FormMailController extends Controller
             );
             $formMailModel->message_sent_to_recipient = true;
             $formMailModel->save();
-        } catch (\Exception $ex) {
-            throw new \Exception($ex->getMessage());
-        }
 
-        if (\Config::get('form_mail.confirmation')) {
-            // try and send out message to sender for conformation.
-            // If it fails then return the exception as the
-            // response.
-            try {
-                $data = $formMailModel->toArray();
-                $data['head'] = \Lang::get(
-                    'pbc_form_mail::body.success',
-                    [
-                        'form' => Strings::formatForTitle($formMailModel->form),
-                        'recipient' => $formMailModel->recipient,
-                    ]
-                );
-                $data['body'] = \View::make('pbc_form_mail::body')
-                    ->with('data', $data)
-                    ->render();
-                $message = $this->helper->premailer(
-                    $this->premailer,
-                    $data
-                );
+            if (\Config::get('form_mail.confirmation')) {
+                // try and send out message to sender for conformation.
+                // If it fails then return the exception as the
+                // response.
                 \Mail::send(
                     'pbc_form_mail_template::body',
-                    ['data' => $message],
+                    ['data' => $formMailModel->message_to_sender],
                     function ($message) use ($formMailModel) {
                         $message->to($formMailModel->sender)
                             ->subject($formMailModel->subject)
@@ -208,19 +175,19 @@ class FormMailController extends Controller
                 );
                 $formMailModel->confirmation_sent_to_sender = true;
                 $formMailModel->save();
-            } catch (\Exception $ex) {
-                throw new \Exception($ex->getMessage());
             }
+        } catch (\Exception $ex) {
+            throw new \Exception($ex->getMessage());
         }
     }
-    
+
 
     /**
      * Queue the messages for sending on next queue process
-     * 
+     *
      * @param \Pbc\FormMail\FormMail $formMailModel
      */
-    private function queue(\Pbc\FormMail\FormMail $formMailModel)
+    public function queue(\Pbc\FormMail\FormMail $formMailModel)
     {
         $this->dispatch(
             new FormMailSendMessage($formMailModel)
@@ -234,5 +201,70 @@ class FormMailController extends Controller
                 )
             );
         }
+    }
+
+    /**
+     * Prep confirmation message for storage
+     *
+     * @param \Pbc\FormMail\FormMail $formMailModel
+     * @return array
+     */
+    public function messageToSender(\Pbc\FormMail\FormMail $formMailModel)
+    {
+        $data = $formMailModel->toArray();
+        $data['head'] = \Lang::get(
+            'pbc_form_mail::body.' . \Route::currentRouteName() . '.confirmation',
+            [
+                'form' => Strings::formatForTitle($formMailModel->form),
+                'recipient' => $formMailModel->recipient,
+            ]
+        );
+        $data['body'] = \View::make('pbc_form_mail::body')
+            ->with('data', $data)
+            ->render();
+        return $this->helper->premailer(
+            $this->premailer,
+            $data
+        );
+
+    }
+
+    /**
+     * Prep message that is sent to recipient for storage
+     *
+     * @param \Pbc\FormMail\FormMail $formMailModel
+     * @return array
+     */
+    public function messageToRecipient(\Pbc\FormMail\FormMail $formMailModel)
+    {
+        $data = $formMailModel->toArray();
+        // headline for email message
+        $data['head'] = \Lang::get(
+            'pbc_form_mail::body.' . \Route::currentRouteName() . '.recipient',
+            [
+                'form' => Strings::formatForTitle($formMailModel->form),
+                'domain' => parse_url(
+                    \App::make('url')->to('/'),
+                    PHP_URL_HOST
+                ),
+                'time' => Carbon::now()
+            ]
+        );
+
+        // body of email message
+        $data['body'] = \View::make('pbc_form_mail::body')
+            ->with('data', $data)
+            ->render();
+
+        return $this->helper->premailer($this->premailer, $data);
+    }
+
+    private function prepRules()
+    {
+        $this->rules = array_merge(
+            $this->rules,
+            \Config::get('form_mail.rules') ?  \Config::get('form_mail.rules') : [],
+            \Config::get('route_rules.' . \Route::currentRouteName()) ? \Config::get('route_rules.' . \Route::currentRouteName()) : []
+        );
     }
 }

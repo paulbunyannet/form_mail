@@ -23,29 +23,17 @@ class FormMailSendConfirmationMessage extends Job implements ShouldQueue
      * @var FormMail
      */
     public $formMail;
-    /**
-     * @var FormMailHelper
-     */
-    public $helper;
 
-    /**
-     * @var Premailer
-     */
-    public $premailer;
     public $doConfirmation;
 
     /**
      * Create a new job instance.
      *
      * @param FormMail $formMail
-     * @param Premailer $premailer
-     * @param FormMailHelper $helper
      */
-    public function __construct(FormMail $formMail, Premailer $premailer, FormMailHelper $helper)
+    public function __construct(FormMail $formMail)
     {
         $this->formMail = $formMail;
-        $this->premailer = $premailer;
-        $this->helper = $helper;
         $this->doConfirmation = \Config::get('form_mail.confirmation');
     }
 
@@ -54,27 +42,16 @@ class FormMailSendConfirmationMessage extends Job implements ShouldQueue
      *
      * @return void
      */
-    public function handle(Mailer $mailer)
+    public function handle()
     {
         if (!$this->formMail->confirmation_sent_to_sender && $this->doConfirmation) {
-            $data = [];
-            $data['subject'] = $this->formMail->subject . ' confirmation';
-            $data['form'] = $this->formMail->form;
-            $data['head'] = \Lang::get('pbc_form_mail::body.success', [
-                'form' => Strings::formatForTitle($data['form']),
-                'recipient' => $this->formMail->recipient,
-            ]);
-            $data['fields'] = $this->formMail->fields;
-            $data['body'] = \View::make('pbc_form_mail::body')->with('data', $data)->render();
-            $message = $this->helper->premailer($this->premailer, $data);
-
-            $mailer->send('pbc_form_mail_template::body', ['data' => $message], function ($message) use ($data) {
+            \Mail::send('pbc_form_mail_template::body', ['data' => $this->formMail->message_to_sender], function ($message) {
                 $message->to($this->formMail->sender)
                     ->from($this->formMail->recipient)
-                    ->subject($data['subject']);
+                    ->subject($this->formMail->subject);
             });
 
-            $this->formMail->confirmation_sent_to_sender = true;
+            $this->formMail->confirmation_sent_to_sender = 1;
             $this->formMail->save();
         }
     }

@@ -67,6 +67,34 @@ class FormControllerTest extends \TestCase
     }
 
     /**
+     * The form handler will use a branding string for header of message
+     *
+     * @test
+     */
+    public function it_uses_a_provided_branding_and_apply_to_message()
+    {
+        $originalBranding = \Config::get('form_mail.branding');
+        $branding = implode('-', $this->faker->words(10));
+        \Config::set('form_mail.branding', $branding);
+
+        $parameters = $this->fields();
+
+        $this->call('POST', 'form-mail/send', $parameters);
+
+        $sent = \DB::table('form_mail')->where(
+            [
+                ['sender', '=', $parameters['email']],
+                ['message_to_recipient', 'like', '%' . $branding . '%'],
+            ]
+        );
+        $this->assertSame($sent->count(), 1);
+
+        // reset branding
+        \Config::set('form_mail.branding', $originalBranding);
+
+    }
+
+    /**
      * Test that even if a string is passed to the
      * message_to_sender field is gets formatted
      * as an json list in the array and parsed
@@ -176,6 +204,7 @@ class FormControllerTest extends \TestCase
 
     }
 
+
     /**
      * Tests to see if queue is turned on and confirmation is set that
      * there will be a record in jobs for FormMailSendMessage and
@@ -198,7 +227,6 @@ class FormControllerTest extends \TestCase
         $this->resetOriginalConfiguration();
 
     }
-
 
     /**
      * Tests to see if queue is turned off and confirmation is not that
@@ -316,6 +344,7 @@ class FormControllerTest extends \TestCase
         $this->resetOriginalConfiguration();
     }
 
+
     /**
      * The form handler will return an error if when sending
      * right away the send to recipient passes but fails
@@ -362,7 +391,6 @@ class FormControllerTest extends \TestCase
         $this->assertSame(['The name field is required.'], $decode->error);
     }
 
-
     /**
      * The form handler will return an error
      * if the fields field is missing.
@@ -384,6 +412,7 @@ class FormControllerTest extends \TestCase
         $this->assertObjectHasAttribute('error', $decode);
         $this->assertSame(['The fields field is required.'], $decode->error);
     }
+
 
     /**
      * The form handler will return an error
@@ -407,7 +436,6 @@ class FormControllerTest extends \TestCase
         $this->assertObjectHasAttribute('error', $decode);
         $this->assertSame(['The fields must be an array.'], $decode->error);
     }
-
 
     /**
      * The form handler will return an error
@@ -454,6 +482,7 @@ class FormControllerTest extends \TestCase
         $this->assertSame(['The email must be a valid email address.'], $decode->error);
     }
 
+
     /**
      * The form handler will return an error
      * if custom rule doesn't pass.
@@ -475,7 +504,6 @@ class FormControllerTest extends \TestCase
         $this->assertSame(['The ' . str_replace('_', ' ', $rule) . ' field is required.'], $decode->error);
         \Config::set('form_mail.rules', $original);
     }
-
 
     /**
      * It will use a string for branding if
@@ -547,6 +575,7 @@ class FormControllerTest extends \TestCase
         \Config::set('form_mail.branding', $originalBranding);
 
     }
+
 
     /**
      * Premailer api will still return html if it returns an exception.

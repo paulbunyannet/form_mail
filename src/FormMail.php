@@ -18,6 +18,7 @@ class FormMail extends Model
         'fields',
         'message',
         'subject',
+        'branding',
         'message_sent_to_recipient',
         'confirmation_sent_to_sender',
     ];

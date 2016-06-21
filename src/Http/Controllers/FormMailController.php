@@ -98,9 +98,8 @@ class FormMailController extends Controller
 
         // branding string
         $this->helper->branding($data);
-
+        
         // make record in formMail model
-
         $formMailModel = new \Pbc\FormMail\FormMail();
         $formMailModel->form = $data['formName'];
         $formMailModel->resource = $data['resource'];
@@ -108,6 +107,7 @@ class FormMailController extends Controller
         $formMailModel->recipient = $data['recipient'];
         $formMailModel->fields = $data['fields'];
         $formMailModel->subject = $data['subject'];
+        $formMailModel->branding = $data['branding'];
         $formMailModel->message_sent_to_recipient = false;
         $formMailModel->confirmation_sent_to_sender = false;
         $formMailModel->message_to_recipient = $this->messageToRecipient($formMailModel);

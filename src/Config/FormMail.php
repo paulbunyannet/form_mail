@@ -9,4 +9,8 @@ return [
     ],
     'queue' => true,
     'confirmation' => false,
+    'delay' => [
+        'send_message' => 15,
+        'send_confirmation' => 15
+    ]
 ];

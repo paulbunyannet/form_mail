@@ -55,7 +55,7 @@ class FormMailController extends Controller
             'queue' => config('form_mail.queue'),
             'confirmation' => config('form_mail.confirmation'),
         ];
-
+        
         $validator = \Validator::make($request->all(), $this->rules, []);
         if ($validator->fails()) {
             $return['error'] = $validator->errors()->all();
@@ -118,7 +118,7 @@ class FormMailController extends Controller
         // then do that here, otherwise email out the messages
         // below.
         try {
-            if (config('form_mail.queue', false) == true) {
+            if (config('form_mail.queue')) {
                 $this->queue($formMailModel);
             } else {
                 $this->send($formMailModel);
@@ -192,7 +192,7 @@ class FormMailController extends Controller
         $this->dispatch(
             new FormMailSendMessage($formMailModel)
         );
-        if (config('form_mail.confirmation', false) == true) {
+        if (config('form_mail.confirmation')) {
             $this->dispatch(
                 new FormMailSendConfirmationMessage(
                     $formMailModel,

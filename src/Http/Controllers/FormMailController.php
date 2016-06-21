@@ -189,17 +189,11 @@ class FormMailController extends Controller
      */
     public function queue(\Pbc\FormMail\FormMail $formMailModel)
     {
-        $this->dispatch(
-            new FormMailSendMessage($formMailModel)
-        );
+        $formMailSendMessage =  (new FormMailSendMessage($formMailModel))->delay(config('form_mail.delay.send_message', 10));
+        $this->dispatch($formMailSendMessage);
         if (config('form_mail.confirmation')) {
-            $this->dispatch(
-                new FormMailSendConfirmationMessage(
-                    $formMailModel,
-                    $this->premailer,
-                    $this->helper
-                )
-            );
+            $formMailSendConfirmationMessage = (new FormMailSendConfirmationMessage($formMailModel))->delay(config('form_mail.delay.send_confirmation', 10));
+            $this->dispatch($formMailSendConfirmationMessage);
         }
     }
 

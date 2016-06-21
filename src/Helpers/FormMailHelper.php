@@ -38,7 +38,7 @@ class FormMailHelper
      */
     public function branding(&$data = [])
     {
-        $branding = \Config::get('form_mail.branding');
+        $branding = config('form_mail.branding');
         if ($branding) {
             $data['branding'] = $branding;
         } else {

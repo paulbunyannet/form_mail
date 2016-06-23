@@ -141,6 +141,8 @@ class FormControllerTest extends \TestCase
         $this->call('POST', 'form-mail/send', $parameters);
 
         $formMail = \Pbc\FormMail\FormMail::where('sender', $parameters['email'])->first();
+        $formMail->message_to_recipient = ['html' => 'this is the body html for test to pass', 'text' => 'this is the body html for test to pass'];
+        $formMail->save();
         \Mail::shouldReceive('send')->once()->withAnyArgs()->andReturn(true);
         $this->expectsJobs(\Pbc\FormMail\Jobs\FormMailSendMessage::class);
         $job = new \Pbc\FormMail\Jobs\FormMailSendMessage($formMail);
@@ -169,6 +171,8 @@ class FormControllerTest extends \TestCase
         $this->call('POST', 'form-mail/send', $parameters);
 
         $formMail = \Pbc\FormMail\FormMail::where('sender', $parameters['email'])->first();
+        $formMail->message_to_sender = ['html' => 'bla bla bla'];
+        $formMail->save();
         \Mail::shouldReceive('send')->times(1)->withAnyArgs()->andReturn(true);
         $this->expectsJobs(\Pbc\FormMail\Jobs\FormMailSendConfirmationMessage::class);
         $job = new \Pbc\FormMail\Jobs\FormMailSendConfirmationMessage($formMail);

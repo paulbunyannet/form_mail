@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Pbc\Bandolier\Type\Strings;
 use Pbc\FormMail\Helpers\FormMailHelper;
+use Pbc\FormMail\Jobs\FormMailPreflightMessageToRecipient;
+use Pbc\FormMail\Jobs\FormMailPreflightMessageToSender;
 use Pbc\FormMail\Jobs\FormMailSendConfirmationMessage;
 use Pbc\FormMail\Jobs\FormMailSendMessage;
 use Pbc\Premailer;
@@ -110,9 +112,9 @@ class FormMailController extends Controller
         $formMailModel->branding = $data['branding'];
         $formMailModel->message_sent_to_recipient = false;
         $formMailModel->confirmation_sent_to_sender = false;
-        $formMailModel->message_to_recipient = $this->messageToRecipient($formMailModel);
-        $formMailModel->message_to_sender = $this->messageToSender($formMailModel);
         $formMailModel->save();
+        $this->messageToRecipient($formMailModel);
+        $this->messageToSender($formMailModel);
 
         // if we should be queueing this message and confirmation,
         // then do that here, otherwise email out the messages
@@ -216,10 +218,15 @@ class FormMailController extends Controller
         $data['body'] = \View::make('pbc_form_mail::body')
             ->with('data', $data)
             ->render();
-        return $this->helper->premailer(
-            $this->premailer,
-            $data
-        );
+        if (config('form_mail.queue')) {
+            $formMailModel->message_to_sender = $data;
+            $formMailModel->save();
+            $preflight = (new FormMailPreflightMessageToSender($formMailModel, $this->premailer));
+            $this->dispatch($preflight);
+        } else {
+            $formMailModel->message_to_sender = $this->helper->premailer($this->premailer, $data);
+            $formMailModel->save();
+        }
 
     }
 
@@ -244,13 +251,20 @@ class FormMailController extends Controller
                 'time' => Carbon::now()
             ]
         );
-
         // body of email message
         $data['body'] = \View::make('pbc_form_mail::body')
             ->with('data', $data)
             ->render();
 
-        return $this->helper->premailer($this->premailer, $data);
+        if (config('form_mail.queue')) {
+            $formMailModel->message_to_recipient = $data;
+            $formMailModel->save();
+            $preflight =  (new FormMailPreflightMessageToRecipient($formMailModel, $this->premailer));
+            $this->dispatch($preflight);
+        } else {
+            $formMailModel->message_to_recipient = $this->helper->premailer($this->premailer, $data);
+            $formMailModel->save();
+        }
     }
 
     private function prepRules()

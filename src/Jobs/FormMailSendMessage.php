@@ -2,26 +2,27 @@
 
 namespace Pbc\FormMail\Jobs;
 
-use App\Jobs\Job;
-use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Pbc\FormMail\FormMail;
 
-class FormMailSendMessage extends Job implements ShouldQueue
+/**
+ * Class FormMailSendMessage
+ * @package Pbc\FormMail\Jobs
+ */
+class FormMailSendMessage extends FormMailSend implements ShouldQueue
 {
     use InteractsWithQueue, SerializesModels;
-    public $formMail;
 
     /**
      * Create a new job instance.
      *
-     * @return void
+     * @param FormMail $formMail
      */
     public function __construct(FormMail $formMail)
     {
-        $this->formMail = $formMail;
+        parent::__construct($formMail);
     }
 
     /**
@@ -32,11 +33,17 @@ class FormMailSendMessage extends Job implements ShouldQueue
     public function handle()
     {
         if (!$this->formMail->message_sent_to_recipient) {
-            \Mail::send('pbc_form_mail_template::body', ['data' => $this->formMail->message_to_recipient], function ($message) {
-                $message->to($this->formMail->recipient)
-                    ->from($this->formMail->sender)
-                    ->subject($this->formMail->subject);
-            });
+
+            $this->validateMessageToRecipient();
+            $this->validateRecipient();
+            $this->validateSender();
+
+            \Mail::send('pbc_form_mail_template::body', ['data' => $this->formMail->message_to_recipient],
+                function ($message) {
+                    $message->to($this->formMail->recipient)
+                        ->from($this->formMail->sender)
+                        ->subject($this->formMail->subject);
+                });
 
             $this->formMail->message_sent_to_recipient = 1;
             $this->formMail->save();

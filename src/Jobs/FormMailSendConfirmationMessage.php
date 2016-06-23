@@ -16,7 +16,7 @@ use Pbc\Bandolier\Type\Strings;
  * Class FormMailSendConfirmationMessage
  * @package Pbc\FormMail\Jobs
  */
-class FormMailSendConfirmationMessage extends Job implements ShouldQueue
+class FormMailSendConfirmationMessage extends FormMailSend implements ShouldQueue
 {
     use InteractsWithQueue, SerializesModels;
     /**
@@ -45,6 +45,11 @@ class FormMailSendConfirmationMessage extends Job implements ShouldQueue
     public function handle()
     {
         if (!$this->formMail->confirmation_sent_to_sender && $this->doConfirmation) {
+
+            $this->validateMessageToSender();
+            $this->validateRecipient();
+            $this->validateSender();
+            
             \Mail::send('pbc_form_mail_template::body', ['data' => $this->formMail->message_to_sender], function ($message) {
                 $message->to($this->formMail->sender)
                     ->from($this->formMail->recipient)
@@ -55,4 +60,6 @@ class FormMailSendConfirmationMessage extends Job implements ShouldQueue
             $this->formMail->save();
         }
     }
+
+
 }

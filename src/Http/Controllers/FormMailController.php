@@ -191,10 +191,10 @@ class FormMailController extends Controller
      */
     public function queue(\Pbc\FormMail\FormMail $formMailModel)
     {
-        $formMailSendMessage =  (new FormMailSendMessage($formMailModel))->delay(config('form_mail.delay.send_message', 10));
+        $formMailSendMessage =  (new FormMailSendMessage($formMailModel, $this->premailer))->delay(config('form_mail.delay.send_message', 10));
         $this->dispatch($formMailSendMessage);
         if (config('form_mail.confirmation')) {
-            $formMailSendConfirmationMessage = (new FormMailSendConfirmationMessage($formMailModel))->delay(config('form_mail.delay.send_confirmation', 10));
+            $formMailSendConfirmationMessage = (new FormMailSendConfirmationMessage($formMailModel, $this->premailer))->delay(config('form_mail.delay.send_confirmation', 10));
             $this->dispatch($formMailSendConfirmationMessage);
         }
     }
@@ -221,8 +221,6 @@ class FormMailController extends Controller
         if (config('form_mail.queue')) {
             $formMailModel->message_to_sender = $data;
             $formMailModel->save();
-            $preflight = (new FormMailPreflightMessageToSender($formMailModel, $this->premailer));
-            $this->dispatch($preflight);
         } else {
             $formMailModel->message_to_sender = $this->helper->premailer($this->premailer, $data);
             $formMailModel->save();
@@ -259,8 +257,6 @@ class FormMailController extends Controller
         if (config('form_mail.queue')) {
             $formMailModel->message_to_recipient = $data;
             $formMailModel->save();
-            $preflight =  (new FormMailPreflightMessageToRecipient($formMailModel, $this->premailer));
-            $this->dispatch($preflight);
         } else {
             $formMailModel->message_to_recipient = $this->helper->premailer($this->premailer, $data);
             $formMailModel->save();

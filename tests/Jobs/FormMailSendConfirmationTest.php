@@ -23,6 +23,7 @@ class FormMailSendConfirmationTest extends \TestCase
     public function setup()
     {
         parent::setUp();
+
     }
 
     public function tearDown()
@@ -40,7 +41,10 @@ class FormMailSendConfirmationTest extends \TestCase
         $formMail = Mockery::mock('Pbc\FormMail\FormMail');
         $this->app->instance('Pbc\FormMail\FormMail', $formMail);
         $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('confirmation_sent_to_sender')->andReturn(true);
-        $job = new FormMailSendConfirmationMessage($formMail);
+
+        $premailerMock = Mockery::mock('\\Pbc\\Premailer');
+
+        $job = new FormMailSendConfirmationMessage($formMail, $premailerMock);
         $this->assertNull($job->handle());
     }
 
@@ -51,11 +55,14 @@ class FormMailSendConfirmationTest extends \TestCase
      */
     public function the_handle_does_nothing_if_confirmation_is_set_to_false()
     {
-        $formMail = Mockery::mock('Pbc\FormMail\FormMail');
-        $this->app->instance('Pbc\FormMail\FormMail', $formMail);
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('confirmation_sent_to_sender')->andReturn(false);
+        $formMailMock = Mockery::mock('Pbc\FormMail\FormMail');
+        $this->app->instance('Pbc\FormMail\FormMail', $formMailMock);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('confirmation_sent_to_sender')->andReturn(false);
         \Config::set('form_mail.confirmation', false);
-        $job = new FormMailSendConfirmationMessage($formMail);
+
+        $premailerMock = Mockery::mock('\\Pbc\\Premailer');
+
+        $job = new FormMailSendConfirmationMessage($formMailMock, $premailerMock);
         $this->assertNull($job->handle());
     }
     
@@ -70,14 +77,20 @@ class FormMailSendConfirmationTest extends \TestCase
     public function the_handle_throws_an_exception_if_html_and_text_keys_are_missing()
     {
         $value = ['key1' => 'bla bla bla'];
-        $formMail = Mockery::mock('Pbc\FormMail\FormMail');
-        $this->app->instance('Pbc\FormMail\FormMail', $formMail);
-        $formMail->shouldReceive('setAttribute');
+        $formMailMock = Mockery::mock('Pbc\FormMail\FormMail');
 
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_sender')->andReturn($value);
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('confirmation_sent_to_sender')->andReturn(false);
+        $this->app->instance('Pbc\FormMail\FormMail', $formMailMock);
+        $formMailMock->shouldReceive('setAttribute');
+
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_sender')->andReturn($value);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('confirmation_sent_to_sender')->andReturn(false);
+        $formMailMock->shouldReceive('save')->zeroOrMoreTimes()->andReturn(true);
         \Config::set('form_mail.confirmation', true);
-        $job = new FormMailSendConfirmationMessage($formMail);
+
+        $premailerMock = Mockery::mock('\\Pbc\\Premailer');
+        $premailerMock->shouldReceive('html')->once()->andReturn(['html' => 'bla bla html', 'text' => 'bla bla bla text']);
+
+        $job = new FormMailSendConfirmationMessage($formMailMock, $premailerMock);
         $job->handle();
     }
 
@@ -92,27 +105,31 @@ class FormMailSendConfirmationTest extends \TestCase
     public function the_handle_will_throw_an_exception_if_recipient_is_not_an_email_address()
     {
         $faker = \Faker\Factory::create();
-        $formMail = Mockery::mock('Pbc\FormMail\FormMail');
-        $this->app->instance('Pbc\FormMail\FormMail', $formMail);
+        $formMailMock = Mockery::mock('Pbc\FormMail\FormMail');
+        $this->app->instance('Pbc\FormMail\FormMail', $formMailMock);
 
-        $formMail->shouldReceive('setAttribute');
-        $formMail->shouldReceive('save');
+        $formMailMock->shouldReceive('setAttribute');
+        $formMailMock->shouldReceive('save');
 
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('confirmation_sent_to_sender')->andReturn(false);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('confirmation_sent_to_sender')->andReturn(false);
         \Config::set('form_mail.confirmation', true);
         $html = ['html' => 'bla bla bla'];
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_sender')->andReturn($html);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_sender')->andReturn($html);
 
         $recipient = implode($faker->words(3));
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('recipient')->andReturn($recipient);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('recipient')->andReturn($recipient);
 
         $sender = $faker->email;
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('sender')->andReturn($sender);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('sender')->andReturn($sender);
 
         $subject = $faker->sentence();
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('subject')->andReturn($subject);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('subject')->andReturn($subject);
 
-        $job = new FormMailSendConfirmationMessage($formMail);
+        $premailerMock = Mockery::mock('\\Pbc\\Premailer');
+        $premailerMock->shouldReceive('html')->once()->andReturn(['html' => 'bla bla html', 'text' => 'bla bla bla text']);
+
+
+        $job = new FormMailSendConfirmationMessage($formMailMock, $premailerMock);
         $job->handle();
     }
 
@@ -128,28 +145,32 @@ class FormMailSendConfirmationTest extends \TestCase
     public function the_handle_will_throw_an_exception_if_sender_is_not_an_email_address()
     {
         $faker = \Faker\Factory::create();
-        $formMail = Mockery::mock('Pbc\FormMail\FormMail');
-        $this->app->instance('Pbc\FormMail\FormMail', $formMail);
+        $formMailMock = Mockery::mock('Pbc\FormMail\FormMail');
+        $this->app->instance('Pbc\FormMail\FormMail', $formMailMock);
 
-        $formMail->shouldReceive('setAttribute');
-        $formMail->shouldReceive('save');
+        $formMailMock->shouldReceive('setAttribute');
+        $formMailMock->shouldReceive('save');
 
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('confirmation_sent_to_sender')->andReturn(false);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('confirmation_sent_to_sender')->andReturn(false);
         \Config::set('form_mail.confirmation', true);
 
         $html = ['html' => 'bla bla bla'];
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_sender')->andReturn($html);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_sender')->andReturn($html);
 
         $recipient = $faker->email;
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('recipient')->andReturn($recipient);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('recipient')->andReturn($recipient);
 
         $sender = implode($faker->words(3));
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('sender')->andReturn($sender);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('sender')->andReturn($sender);
 
         $subject = $faker->sentence();
-        $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('subject')->andReturn($subject);
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('subject')->andReturn($subject);
 
-        $job = new FormMailSendConfirmationMessage($formMail);
+        $premailerMock = Mockery::mock('\\Pbc\\Premailer');
+        $premailerMock->shouldReceive('html')->once()->andReturn(['html' => 'bla bla html', 'text' => 'bla bla bla text']);
+
+
+        $job = new FormMailSendConfirmationMessage($formMailMock, $premailerMock);
         $job->handle();
     }
 
@@ -219,8 +240,10 @@ class FormMailSendConfirmationTest extends \TestCase
             })
         );
 
+        $premailerMock = Mockery::mock('\\Pbc\\Premailer');
+        $premailerMock->shouldReceive('html')->once()->andReturn(['html' => 'bla bla html', 'text' => 'bla bla bla text']);
 
-        $job = new FormMailSendConfirmationMessage($formMail);
+        $job = new FormMailSendConfirmationMessage($formMail, $premailerMock);
         $this->assertNull($job->handle());
     }
     

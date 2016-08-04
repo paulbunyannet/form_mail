@@ -41,6 +41,9 @@ class FormControllerTest extends \TestCase
         exec('php artisan migrate:refresh');
         $this->faker = \Faker\Factory::create();
         $this->configFile = config_path('form_mail.php');
+
+
+
     }
 
     /**
@@ -141,11 +144,15 @@ class FormControllerTest extends \TestCase
         $this->call('POST', 'form-mail/send', $parameters);
 
         $formMail = \Pbc\FormMail\FormMail::where('sender', $parameters['email'])->first();
-        $formMail->message_to_recipient = ['html' => 'this is the body html for test to pass', 'text' => 'this is the body html for test to pass'];
+        $formMail->message_to_recipient =  array_merge($formMail->toArray(), ['html' => 'this is the body html for test to pass', 'text' => 'this is the body html for test to pass']);
         $formMail->save();
         \Mail::shouldReceive('send')->once()->withAnyArgs()->andReturn(true);
         $this->expectsJobs(\Pbc\FormMail\Jobs\FormMailSendMessage::class);
-        $job = new \Pbc\FormMail\Jobs\FormMailSendMessage($formMail);
+
+        $premailerMock = Mockery::mock('\\Pbc\\Premailer');
+        $premailerMock->shouldReceive('html')->once()->andReturn(['html' => 'this is the body html for test to pass', 'text' => 'this is the body html for test to pass']);
+
+        $job = new \Pbc\FormMail\Jobs\FormMailSendMessage($formMail, $premailerMock);
         app('\Illuminate\Contracts\Bus\Dispatcher')->dispatch($job);
         $job->handle();
 
@@ -171,11 +178,16 @@ class FormControllerTest extends \TestCase
         $this->call('POST', 'form-mail/send', $parameters);
 
         $formMail = \Pbc\FormMail\FormMail::where('sender', $parameters['email'])->first();
-        $formMail->message_to_sender = ['html' => 'bla bla bla'];
+        $formMail->message_to_sender = array_merge($formMail->toArray(), ['html' => 'bla bla bla']);
         $formMail->save();
         \Mail::shouldReceive('send')->times(1)->withAnyArgs()->andReturn(true);
         $this->expectsJobs(\Pbc\FormMail\Jobs\FormMailSendConfirmationMessage::class);
-        $job = new \Pbc\FormMail\Jobs\FormMailSendConfirmationMessage($formMail);
+
+        $premailerMock = Mockery::mock('\\Pbc\\Premailer');
+        $premailerMock->shouldReceive('html')->once()->andReturn(['html' => 'this is the body html for test to pass', 'text' => 'this is the body html for test to pass']);
+
+
+        $job = new \Pbc\FormMail\Jobs\FormMailSendConfirmationMessage($formMail, $premailerMock);
         app('\Illuminate\Contracts\Bus\Dispatcher')->dispatch($job);
         $job->handle();
 

@@ -19,10 +19,11 @@ class FormMailSendMessage extends FormMailSend implements ShouldQueue
      * Create a new job instance.
      *
      * @param FormMail $formMail
+     * @param \Pbc\Premailer $premailer
      */
-    public function __construct(FormMail $formMail)
+    public function __construct(FormMail $formMail, \Pbc\Premailer $premailer)
     {
-        parent::__construct($formMail);
+        parent::__construct($formMail, $premailer);
     }
 
     /**
@@ -34,9 +35,12 @@ class FormMailSendMessage extends FormMailSend implements ShouldQueue
     {
         if (!$this->formMail->message_sent_to_recipient) {
 
-            $this->validateMessageToRecipient();
-            $this->validateRecipient();
-            $this->validateSender();
+            // preflight the message to inline the css
+            $this->preflight('message_to_recipient')
+            // do validations
+                 ->validateMessageToRecipient()
+                 ->validateRecipient()
+                 ->validateSender();
 
             \Mail::send('pbc_form_mail_template::body', ['data' => $this->formMail->message_to_recipient],
                 function ($message) {
@@ -49,4 +53,5 @@ class FormMailSendMessage extends FormMailSend implements ShouldQueue
             $this->formMail->save();
         }
     }
+
 }

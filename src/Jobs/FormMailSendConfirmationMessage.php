@@ -30,10 +30,11 @@ class FormMailSendConfirmationMessage extends FormMailSend implements ShouldQueu
      * Create a new job instance.
      *
      * @param FormMail $formMail
+     * @param \Pbc\Premailer $premailer
      */
-    public function __construct(FormMail $formMail)
+    public function __construct(FormMail $formMail, Premailer $premailer)
     {
-        $this->formMail = $formMail;
+        parent::__construct($formMail, $premailer);
         $this->doConfirmation = \Config::get('form_mail.confirmation');
     }
 
@@ -46,9 +47,12 @@ class FormMailSendConfirmationMessage extends FormMailSend implements ShouldQueu
     {
         if (!$this->formMail->confirmation_sent_to_sender && $this->doConfirmation) {
 
-            $this->validateMessageToSender();
-            $this->validateRecipient();
-            $this->validateSender();
+            // preflight the message to the sender (confirmation message)
+            $this->preflight('message_to_sender')
+            // do validations
+                 ->validateMessageToSender()
+                 ->validateRecipient()
+                 ->validateSender();
             
             \Mail::send('pbc_form_mail_template::body', ['data' => $this->formMail->message_to_sender], function ($message) {
                 $message->to($this->formMail->sender)

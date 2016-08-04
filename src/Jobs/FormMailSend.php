@@ -14,15 +14,26 @@ namespace Pbc\FormMail\Jobs;
 
 use App\Jobs\Job;
 use Pbc\FormMail\FormMail;
+use Pbc\Premailer;
 
 class FormMailSend extends Job
 {
 
     public $formMail;
+    /**
+     * @var Premailer Premailer
+     */
+    public $preflight;
 
-    public function __construct(FormMail $formMail)
+    /**
+     * FormMailSend constructor.
+     * @param FormMail $formMail
+     * @param Premailer $premailer
+     */
+    public function __construct(FormMail $formMail, Premailer $premailer)
     {
         $this->formMail = $formMail;
+        $this->preflight = $premailer;
     }
 
     /**
@@ -36,6 +47,8 @@ class FormMailSend extends Job
         if (!array_key_exists('html', $this->formMail->message_to_recipient) && !array_key_exists('text', $this->formMail->message_to_recipient)) {
             throw new \Exception('Missing html and/or text keys in message_to_recipient');
         }
+
+        return $this;
     }
     
     /**
@@ -49,6 +62,8 @@ class FormMailSend extends Job
         if (!array_key_exists('html', $this->formMail->message_to_sender) && !array_key_exists('text', $this->formMail->message_to_sender)) {
             throw new \Exception('Missing html and/or text keys in message_to_sender');
         }
+
+        return $this;
     }
 
     /**
@@ -62,6 +77,8 @@ class FormMailSend extends Job
         if (!filter_var($this->formMail->recipient, FILTER_VALIDATE_EMAIL)) {
             throw new \Exception('Invalid recipient address');
         }
+
+        return $this;
 
     }
 
@@ -77,6 +94,16 @@ class FormMailSend extends Job
             throw new \Exception('Invalid sender address');
         }
 
+        return $this;
+    }
+
+    protected function preflight($string)
+    {
+        $message = $this->preflight->html(\View::make('pbc_form_mail_template::layout')->with('data', $this->formMail->{$string})->render());
+        $this->formMail->{$string} = $message;
+        $this->formMail->save();
+
+        return $this;
     }
 
 }

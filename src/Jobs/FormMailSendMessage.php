@@ -49,6 +49,8 @@ class FormMailSendMessage extends FormMailSend implements ShouldQueue
                         ->subject($this->formMail->subject);
                 });
 
+            $this->validateMailSent();
+
             $this->formMail->message_sent_to_recipient = 1;
             $this->formMail->save();
         }

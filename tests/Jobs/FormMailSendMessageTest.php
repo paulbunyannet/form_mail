@@ -189,6 +189,7 @@ class FormMailSendMessageTest extends \TestCase
         $formMailMock->subject = $subject;
 
         // see http://stackoverflow.com/a/31135826 for example
+        \Mail::shouldReceive('failures')->zeroOrMoreTimes()->andReturn([]);
         \Mail::shouldReceive('send')->once()->with(
             'pbc_form_mail_template::body',
             \Mockery::on(function ($data) use ($formMailMock) {

@@ -44,13 +44,15 @@ class FormMailSend extends Job
      */
     public function validateMessageToRecipient()
     {
-        if (!array_key_exists('html', $this->formMail->message_to_recipient) && !array_key_exists('text', $this->formMail->message_to_recipient)) {
+        if (!array_key_exists('html', $this->formMail->message_to_recipient) && !array_key_exists('text',
+                $this->formMail->message_to_recipient)
+        ) {
             throw new \Exception('Missing html and/or text keys in message_to_recipient');
         }
 
         return $this;
     }
-    
+
     /**
      * Validate message to sender. It needs to
      * have a key "html" or "text".
@@ -59,7 +61,9 @@ class FormMailSend extends Job
      */
     public function validateMessageToSender()
     {
-        if (!array_key_exists('html', $this->formMail->message_to_sender) && !array_key_exists('text', $this->formMail->message_to_sender)) {
+        if (!array_key_exists('html', $this->formMail->message_to_sender) && !array_key_exists('text',
+                $this->formMail->message_to_sender)
+        ) {
             throw new \Exception('Missing html and/or text keys in message_to_sender');
         }
 
@@ -97,13 +101,42 @@ class FormMailSend extends Job
         return $this;
     }
 
+    /**
+     * Preflight html email message
+     *
+     * @param $string
+     * @return $this
+     */
     protected function preflight($string)
     {
-        $message = $this->preflight->html(\View::make('pbc_form_mail_template::layout')->with('data', $this->formMail->{$string})->render());
+        $message = $this->preflight->html(
+            \View::make('pbc_form_mail_template::layout')
+                ->with('data', $this->formMail->{$string})
+                ->render());
         $this->formMail->{$string} = $message;
         $this->formMail->save();
 
         return $this;
+    }
+
+    /**
+     * Do check if there was a failure when trying to send mail
+     *
+     * @return $this
+     * @throws \Exception
+     */
+    protected function validateMailSent()
+    {
+        if (count(\Mail::failures()) > 0) {
+            $exceptionMessage = "There was one or more mail failures. They were: \n\r";
+            foreach (\Mail::failures() as $email_address) {
+                $exceptionMessage .= " - $email_address \n\r";
+            }
+            throw new \Exception($exceptionMessage);
+        }
+
+        return $this;
+
     }
 
 }

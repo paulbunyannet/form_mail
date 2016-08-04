@@ -60,6 +60,8 @@ class FormMailSendConfirmationMessage extends FormMailSend implements ShouldQueu
                     ->subject($this->formMail->subject);
             });
 
+            $this->validateMailSent();
+
             $this->formMail->confirmation_sent_to_sender = 1;
             $this->formMail->save();
         }

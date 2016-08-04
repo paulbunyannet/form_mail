@@ -147,7 +147,9 @@ class FormControllerTest extends \TestCase
         $formMail->message_to_recipient =  array_merge($formMail->toArray(), ['html' => 'this is the body html for test to pass', 'text' => 'this is the body html for test to pass']);
         $formMail->save();
         \Mail::shouldReceive('send')->once()->withAnyArgs()->andReturn(true);
+        \Mail::shouldReceive('failures')->zeroOrMoreTimes()->andReturn([]);
         $this->expectsJobs(\Pbc\FormMail\Jobs\FormMailSendMessage::class);
+
 
         $premailerMock = Mockery::mock('\\Pbc\\Premailer');
         $premailerMock->shouldReceive('html')->once()->andReturn(['html' => 'this is the body html for test to pass', 'text' => 'this is the body html for test to pass']);
@@ -181,6 +183,7 @@ class FormControllerTest extends \TestCase
         $formMail->message_to_sender = array_merge($formMail->toArray(), ['html' => 'bla bla bla']);
         $formMail->save();
         \Mail::shouldReceive('send')->times(1)->withAnyArgs()->andReturn(true);
+        \Mail::shouldReceive('failures')->zeroOrMoreTimes()->andReturn([]);
         $this->expectsJobs(\Pbc\FormMail\Jobs\FormMailSendConfirmationMessage::class);
 
         $premailerMock = Mockery::mock('\\Pbc\\Premailer');

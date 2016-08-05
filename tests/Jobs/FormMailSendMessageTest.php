@@ -59,14 +59,36 @@ class FormMailSendMessageTest extends \TestCase
      */
     public function the_handle_throws_an_exception_if_html_and_text_keys_are_missing()
     {
-        $value = ['key1' => 'bla bla bla'];
+        $faker = \Faker\Factory::create();
         $formMailMock = Mockery::mock('Pbc\FormMail\FormMail');
         $this->app->instance('Pbc\FormMail\FormMail', $formMailMock);
         $formMailMock->shouldReceive('setAttribute');
 
-        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_recipient')->andReturn($value);
         $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_sent_to_recipient')->andReturn(false);
         $formMailMock->shouldReceive('save')->zeroOrMoreTimes()->andReturn(true);
+
+        $html = [
+            'resource' => 'bla_bla_bla',
+            'form' => 'some_form',
+            'subject' => $faker->sentence() ,
+            'sender' => $faker->email,
+            'recipient' => $faker->sentence(),
+            'fields' => [],
+            'subject' => 'Subject',
+            'branding' => '',
+            'confirmation_sent_to_sender' => false,
+            'message_sent_to_recipient' => false,
+            'message_to_sender' => ['subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
+            'message_to_recipient' => ['subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
+            'html' => $faker->paragraph(),
+            'text' => $faker->paragraph()
+        ];
+        foreach($html as $key => $value) {
+            $formMailMock->{$key} = $value;
+            $formMailMock->save();
+            $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with($key)->andReturn($value);
+        }
+
         $premailerMock = Mockery::mock('\\Pbc\\Premailer');
         $premailerMock->shouldReceive('html')->once()->andReturn(['html' => 'bla bla html', 'text' => 'bla bla bla text']);
 
@@ -94,7 +116,28 @@ class FormMailSendMessageTest extends \TestCase
 
         $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_sent_to_recipient')->andReturn(false);
 
-        $html = ['html' => 'bla bla bla'];
+        $html = [
+            'resource' => 'bla_bla_bla',
+            'form' => 'some_form',
+            'subject' => $faker->sentence() ,
+            'sender' => $faker->email,
+            'recipient' => $faker->sentence(),
+            'fields' => [],
+            'subject' => 'Subject',
+            'branding' => '',
+            'confirmation_sent_to_sender' => false,
+            'message_sent_to_recipient' => false,
+            'message_to_sender' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph(), 'subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
+            'message_to_recipient' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph(), 'subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
+            'html' => $faker->paragraph(),
+            'text' => $faker->paragraph()
+        ];
+        foreach($html as $key => $value) {
+            $formMailMock->{$key} = $value;
+            $formMailMock->save();
+            $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with($key)->andReturn($value);
+        }
+
         $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_recipient')->andReturn($html);
 
         $recipient = implode($faker->words(3));
@@ -134,17 +177,29 @@ class FormMailSendMessageTest extends \TestCase
 
         $formMailmock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_sent_to_recipient')->andReturn(false);
 
-        $html = ['html' => 'bla bla bla'];
-        $formMailmock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_recipient')->andReturn($html);
+        $html = [
+            'resource' => 'bla_bla_bla',
+            'form' => 'some_form',
+            'subject' => $faker->sentence() ,
+            'sender' => $faker->sentence(),
+            'recipient' => $faker->email,
+            'fields' => [],
+            'subject' => 'Subject',
+            'branding' => '',
+            'confirmation_sent_to_sender' => false,
+            'message_sent_to_recipient' => false,
+            'message_to_sender' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph(), 'subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
+            'message_to_recipient' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph(), 'subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
+            'html' => $faker->paragraph(),
+            'text' => $faker->paragraph()
+        ];
 
-        $recipient = $faker->email;
-        $formMailmock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('recipient')->andReturn($recipient);
+        foreach($html as $key => $value) {
+            $formMailmock->{$key} = $value;
+            $formMailmock->save();
+            $formMailmock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with($key)->andReturn($value);
+        }
 
-        $sender = implode($faker->words(3));
-        $formMailmock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('sender')->andReturn($sender);
-
-        $subject = $faker->sentence();
-        $formMailmock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('subject')->andReturn($subject);
 
         $premailerMock = Mockery::mock('\\Pbc\\Premailer');
         $premailerMock->shouldReceive('html')->once()->andReturn(['html' => 'bla bla html', 'text' => 'bla bla bla text']);
@@ -172,15 +227,29 @@ class FormMailSendMessageTest extends \TestCase
         $formMailMock->shouldReceive('save');
 
         $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_sent_to_recipient')->andReturn(false);
-
-        $html = ['html' => 'bla bla bla'];
+        $recipient = $faker->email;
+        $sender = $faker->email;
+        $html = [
+            'resource' => 'bla_bla_bla',
+            'form' => 'some_form',
+            'subject' => 'this is the subject' ,
+            'sender' => $sender,
+            'recipient' => $recipient,
+            'fields' => [],
+            'subject' => 'Subject',
+            'branding' => '',
+            'confirmation_sent_to_sender' => false,
+            'message_sent_to_recipient' => false,
+            'message_to_sender' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph()],
+            'message_to_recipient' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph()],
+            'html' => $faker->paragraph(),
+            'text' => $faker->paragraph(),
+        ];
         $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_recipient')->andReturn($html);
 
-        $recipient = $faker->email;
         $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('recipient')->andReturn($recipient);
         $formMailMock->recipient = $recipient;
 
-        $sender = $faker->email;
         $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('sender')->andReturn($sender);
         $formMailMock->sender = $sender;
 

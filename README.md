@@ -45,5 +45,5 @@ Add a graphic/html/whatever to the branding config item and it will be injected 
 
 To add a verbage (success message, what to do next, etc.) to the top of the message add a line to the `resources/lang/vendor/pbc_form_mail/en/body.php` using the route name and the the following keys:
 
-+ `recipient` used for top of emaoled going to recipient
++ `recipient` used for top of email going to recipient
 + `confirmation` used in both the return value from `Pbc\FormMail\Http\Controllers\FormMailController@requestHandler` and the confirmation message if option is turned on.

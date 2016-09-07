@@ -32,6 +32,18 @@ class FormMailHelper
     }
 
     /**
+     * create resource name from class and function
+     *
+     * @param $class
+     * @param $function
+     * @return string
+     */
+    public function resourceName($class, $function)
+    {
+        return str_replace('\\', '.', strtolower($class)) . '.' . strtolower($function);
+    }
+
+    /**
      * Get branding string
      *
      * @param array $data

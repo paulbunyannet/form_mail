@@ -16,7 +16,7 @@ use Pbc\Bandolier\Type\Strings;
  * Class FormMailSendConfirmationMessage
  * @package Pbc\FormMail\Jobs
  */
-class FormMailSendConfirmationMessage extends FormMailSend implements ShouldQueue
+class FormMailSendConfirmationMessage extends FormMailJob implements ShouldQueue
 {
     use InteractsWithQueue, SerializesModels;
     /**

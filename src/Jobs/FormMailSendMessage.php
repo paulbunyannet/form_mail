@@ -11,7 +11,7 @@ use Pbc\FormMail\FormMail;
  * Class FormMailSendMessage
  * @package Pbc\FormMail\Jobs
  */
-class FormMailSendMessage extends FormMailSend implements ShouldQueue
+class FormMailSendMessage extends FormMailJob implements ShouldQueue
 {
     use InteractsWithQueue, SerializesModels;
 

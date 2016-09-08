@@ -3,7 +3,7 @@
  * FormMailSend
  *
  * Created 6/23/16 10:01 AM
- * vase class for FormMailSend* jobs
+ * Base class for FormMailSend* jobs
  *
  * @author Nate Nolting <naten@paulbunyan.net>
  * @package Pbc\FormMail\Jobs
@@ -16,7 +16,7 @@ use App\Jobs\Job;
 use Pbc\FormMail\FormMail;
 use Pbc\Premailer;
 
-class FormMailSend extends Job
+class FormMailJob extends Job
 {
 
     public $formMail;
@@ -128,11 +128,13 @@ class FormMailSend extends Job
     protected function validateMailSent()
     {
         if (count(\Mail::failures()) > 0) {
+            // @codeCoverageIgnoreStart
             $exceptionMessage = "There was one or more mail failures. They were: \n\r";
             foreach (\Mail::failures() as $email_address) {
                 $exceptionMessage .= " - $email_address \n\r";
             }
             throw new \Exception($exceptionMessage);
+            // @codeCoverageIgnoreEnd
         }
 
         return $this;

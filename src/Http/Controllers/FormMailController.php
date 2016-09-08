@@ -3,15 +3,15 @@
 namespace Pbc\FormMail\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests;
-use Carbon\Carbon;
+
 use Illuminate\Http\Request;
 use Pbc\Bandolier\Type\Strings;
+use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Helpers\FormMailHelper;
-use Pbc\FormMail\Jobs\FormMailPreflightMessageToRecipient;
-use Pbc\FormMail\Jobs\FormMailPreflightMessageToSender;
-use Pbc\FormMail\Jobs\FormMailSendConfirmationMessage;
-use Pbc\FormMail\Jobs\FormMailSendMessage;
+use Pbc\FormMail\Traits\QueueTrait;
+use Pbc\FormMail\Traits\RulesTrait;
+use Pbc\FormMail\Traits\SendTrait;
+use Pbc\FormMail\Traits\MessageTrait;
 use Pbc\Premailer;
 
 /**
@@ -20,7 +20,7 @@ use Pbc\Premailer;
  */
 class FormMailController extends Controller
 {
-
+    use QueueTrait, SendTrait, MessageTrait, RulesTrait;
     /**
      * @var array
      */
@@ -43,8 +43,6 @@ class FormMailController extends Controller
         $this->premailer = $premailer;
         $this->helper = $helper;
         $this->prepRules();
-
-
     }
 
     /**
@@ -103,19 +101,30 @@ class FormMailController extends Controller
         $this->helper->branding($data);
         
         // make record in formMail model
-        $formMailModel = new \Pbc\FormMail\FormMail();
-        $formMailModel->form = $data['formName'];
-        $formMailModel->resource = $data['resource'];
-        $formMailModel->sender = $request->input('email');
-        $formMailModel->recipient = $data['recipient'];
-        $formMailModel->fields = $data['fields'];
-        $formMailModel->subject = $data['subject'];
-        $formMailModel->branding = $data['branding'];
-        $formMailModel->message_sent_to_recipient = false;
-        $formMailModel->confirmation_sent_to_sender = false;
-        $formMailModel->save();
-        $this->messageToRecipient($formMailModel);
-        $this->messageToSender($formMailModel);
+        \DB::beginTransaction();
+        try {
+            $formMailModelData = [
+                'form' => $data['formName'],
+                'resource' => $data['resource'],
+                'sender' => $request->input('email'),
+                'recipient' => $data['recipient'],
+                'fields' => $data['fields'],
+                'subject' => $data['subject'],
+                'branding' => $data['branding'],
+                'message_sent_to_recipient' => false,
+                'confirmation_sent_to_sender' => false,
+            ];
+            $formMailModel = new FormMail($formMailModelData);
+            $this->messageToRecipient($formMailModel);
+            $this->messageToSender($formMailModel);
+        } catch (\Exception $ex) {
+            // @codeCoverageIgnoreStart
+            \DB::rollBack();
+            $return['error'] = [$ex->getMessage()];
+            return \Response::json($return);
+            // @codeCoverageIgnoreEnd
+        }
+        \DB::commit();
 
         // if we should be queueing this message and confirmation,
         // then do that here, otherwise email out the messages
@@ -136,140 +145,4 @@ class FormMailController extends Controller
 
     }
 
-    /**
-     * Send messages out to recipients
-     *
-     * @param \Pbc\FormMail\FormMail $formMailModel
-     * @throws \Exception
-     */
-    public function send(\Pbc\FormMail\FormMail $formMailModel)
-    {
-
-        // try and email out the message to the recipient.
-        // If it fails then return the exception as the
-        // response.
-        try {
-            \Mail::send(
-                'pbc_form_mail_template::body',
-                ['data' => $formMailModel->message_to_recipient],
-                function ($message) use ($formMailModel) {
-                    $message->to($formMailModel->recipient)
-                        ->subject($formMailModel->subject)
-                        ->from(
-                            $formMailModel->sender
-                        );
-                }
-            );
-            $formMailModel->message_sent_to_recipient = true;
-            $formMailModel->save();
-
-            if (\Config::get('form_mail.confirmation')) {
-                // try and send out message to sender for conformation.
-                // If it fails then return the exception as the
-                // response.
-                \Mail::send(
-                    'pbc_form_mail_template::body',
-                    ['data' => $formMailModel->message_to_sender],
-                    function ($message) use ($formMailModel) {
-                        $message->to($formMailModel->sender)
-                            ->subject($formMailModel->subject)
-                            ->from($formMailModel->recipient);
-                    }
-                );
-                $formMailModel->confirmation_sent_to_sender = true;
-                $formMailModel->save();
-            }
-        } catch (\Exception $ex) {
-            throw new \Exception($ex->getMessage());
-        }
-    }
-
-
-    /**
-     * Queue the messages for sending on next queue process
-     *
-     * @param \Pbc\FormMail\FormMail $formMailModel
-     */
-    public function queue(\Pbc\FormMail\FormMail $formMailModel)
-    {
-        $formMailSendMessage =  (new FormMailSendMessage($formMailModel, $this->premailer))->delay(config('form_mail.delay.send_message', 10));
-        $this->dispatch($formMailSendMessage);
-        if (config('form_mail.confirmation')) {
-            $formMailSendConfirmationMessage = (new FormMailSendConfirmationMessage($formMailModel, $this->premailer))->delay(config('form_mail.delay.send_confirmation', 10));
-            $this->dispatch($formMailSendConfirmationMessage);
-        }
-    }
-
-    /**
-     * Prep confirmation message for storage
-     *
-     * @param \Pbc\FormMail\FormMail $formMailModel
-     * @return array
-     */
-    public function messageToSender(\Pbc\FormMail\FormMail $formMailModel)
-    {
-        $data = $formMailModel->toArray();
-        $data['head'] = \Lang::get(
-            'pbc_form_mail::body.' . \Route::currentRouteName() . '.confirmation',
-            [
-                'form' => Strings::formatForTitle($formMailModel->form),
-                'recipient' => $formMailModel->recipient,
-            ]
-        );
-        $data['body'] = \View::make('pbc_form_mail::body')
-            ->with('data', $data)
-            ->render();
-        if (config('form_mail.queue')) {
-            $formMailModel->message_to_sender = $data;
-            $formMailModel->save();
-        } else {
-            $formMailModel->message_to_sender = $this->helper->premailer($this->premailer, $data);
-            $formMailModel->save();
-        }
-
-    }
-
-    /**
-     * Prep message that is sent to recipient for storage
-     *
-     * @param \Pbc\FormMail\FormMail $formMailModel
-     * @return array
-     */
-    public function messageToRecipient(\Pbc\FormMail\FormMail $formMailModel)
-    {
-        $data = $formMailModel->toArray();
-        // headline for email message
-        $data['head'] = \Lang::get(
-            'pbc_form_mail::body.' . \Route::currentRouteName() . '.recipient',
-            [
-                'form' => Strings::formatForTitle($formMailModel->form),
-                'domain' => parse_url(
-                    \App::make('url')->to('/'),
-                    PHP_URL_HOST
-                ),
-                'time' => Carbon::now()
-            ]
-        );
-        // body of email message
-        $data['body'] = \View::make('pbc_form_mail::body')
-            ->with('data', $data)
-            ->render();
-
-        if (config('form_mail.queue')) {
-            $formMailModel->message_to_recipient = $data;
-            $formMailModel->save();
-        } else {
-            $formMailModel->message_to_recipient = $this->helper->premailer($this->premailer, $data);
-            $formMailModel->save();
-        }
-    }
-
-    private function prepRules()
-    {
-        $this->rules = array_merge(
-            $this->rules,
-            \Config::get('form_mail.rules') ?  \Config::get('form_mail.rules') : [],
-            \Config::get('route_rules.' . \Route::currentRouteName()) ? \Config::get('route_rules.' . \Route::currentRouteName()) : []
-        );
-    }
 }

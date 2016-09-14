@@ -25,6 +25,8 @@ class FormMailJob extends Job
      */
     public $preflight;
 
+    public $preflighted = [];
+
     /**
      * FormMailSend constructor.
      * @param FormMail $formMail
@@ -104,16 +106,21 @@ class FormMailJob extends Job
     /**
      * Preflight html email message
      *
-     * @param $string
+     * @param $key
      * @return $this
      */
-    protected function preflight($string)
+    public function preflight($key)
     {
-        $message = $this->preflight->html(
-            \View::make('pbc_form_mail_template::layout')
-                ->with('data', $this->formMail->{$string})
-                ->render());
-        $this->formMail->{$string} = $message;
+        $body = \View::make('pbc_form_mail_template::layout')
+            ->with('data', $this->formMail->{$key})
+            ->render();
+        try {
+            $message = $this->preflight->html($body);
+        } catch (\Exception $ex) {
+            $message = ['html' => $body, 'text' => $body];
+        }
+        $this->preflighted[$key] = $message;
+        $this->formMail->{$key} = $message;
         $this->formMail->save();
 
         return $this;

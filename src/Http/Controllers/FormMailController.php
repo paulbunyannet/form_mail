@@ -49,7 +49,7 @@ class FormMailController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function requestHandler(Request $request)
+    public function requestHandler(Request $request, $data = [])
     {
         $return = [
             'queue' => config('form_mail.queue'),
@@ -62,32 +62,36 @@ class FormMailController extends Controller
             return \Response::json($return);
         }
 
-        /** @var array $data List of data items that will be passed to views */
-        $data = [];
-
         /** @var string $form name of form from route name */
-        $data['formName'] = $this->helper->formName();
+        if (!array_key_exists('formName', $data)) {
+            $data['formName'] = $this->helper->formName();
+        }
 
         // create recipient from the form name and the current host
-        $data['recipient'] = $this->helper
-            ->recipient(\Route::currentRouteName());
+        if (!array_key_exists('recipient', $data)) {
+            $data['recipient'] = $this->helper
+                ->recipient(\Route::currentRouteName());
+        }
 
-        /** @var string $resource path to resources, used for path to view and localization */
-        $resource = $this->helper->resourceName(__CLASS__, __FUNCTION__);
-        $data['resource'] = $resource;
+        if (!array_key_exists('resource', $data)) {
+            /** @var string $resource path to resources, used for path to view and localization */
+            $data['resource'] = $this->helper->resourceName(__CLASS__, __FUNCTION__);
+        }
 
         // create fields list from the fields submitted to this handler
         $data['fields'] = [];
         $this->helper->requestFields($request, $data);
 
         // headline for return response
-        $data['head'] = \Lang::get(
-            'pbc_form_mail::body.' . \Route::currentRouteName() . '.confirmation',
-            [
-                'form' => Strings::formatForTitle($data['formName']),
-                'recipient' => $data['recipient'],
-            ]
-        );
+        if (!array_key_exists('head', $data)) {
+            $data['head'] = \Lang::get(
+                'pbc_form_mail::body.' . \Route::currentRouteName() . '.confirmation',
+                [
+                    'form' => Strings::formatForTitle($data['formName']),
+                    'recipient' => $data['recipient'],
+                ]
+            );
+        }
 
         /** @var string $response response that will be passed as success */
         $data['response'] = \View::make('pbc_form_mail::body')
@@ -95,10 +99,14 @@ class FormMailController extends Controller
             ->render();
 
         // email message subject
-        $this->helper->subject($data);
+        if (!array_key_exists('subject', $data)) {
+            $this->helper->subject($data);
+        }
 
         // branding string
-        $this->helper->branding($data);
+        if (!array_key_exists('branding', $data)) {
+            $this->helper->branding($data);
+        }
         
         // make record in formMail model
         \DB::beginTransaction();

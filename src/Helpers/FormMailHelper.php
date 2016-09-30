@@ -69,9 +69,25 @@ class FormMailHelper
      *
      * @return mixed
      */
-    public function formName()
+    public function formName(&$data)
     {
-        return preg_replace('/[\s+\-]/', '_', \Route::currentRouteName());
+        if (array_key_exists('formName', $data)) {
+            return;
+        }
+        $data['formName'] = $this->makeFormName();
+    }
+
+    /**
+     * Get form name string
+     *
+     * @return mixed
+     */
+    public function makeFormName($route = null)
+    {
+        if (!$route) {
+            $route = \Route::currentRouteName();
+        }
+        return preg_replace('/[\s+\-]/', '_', $route);
     }
 
     /**
@@ -98,7 +114,7 @@ class FormMailHelper
      */
     public function subject(&$data = [])
     {
-        $data['subject'] = Strings::formatForTitle($this->formName()) . ' Form Submission';
+        $data['subject'] = Strings::formatForTitle($this->makeFormName()) . ' Form Submission';
     }
 
     /**

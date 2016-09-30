@@ -62,10 +62,9 @@ class FormMailController extends Controller
             return \Response::json($return);
         }
 
-        /** @var string $form name of form from route name */
-        if (!array_key_exists('formName', $data)) {
-            $data['formName'] = $this->helper->formName();
-        }
+        //set up form name
+        $this->helper->formName($data);
+
 
         // create recipient from the form name and the current host
         if (!array_key_exists('recipient', $data)) {

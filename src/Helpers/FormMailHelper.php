@@ -232,4 +232,47 @@ class FormMailHelper
         $formName = $this->makeFormName($form);
         return $formName . '@' . str_replace_first('www.', '', parse_url(\Config::get('app.url'), PHP_URL_HOST));
     }
+
+    /**
+     * Check if string is json
+     * @param $string
+     * @return bool
+     */
+    public function isJson($string) {
+        if (substr($string, 0, 1) !== '{' && substr($string, 0, 1) !== '[') {
+            return false;
+        }
+        @json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE);
+    }
+
+    /**
+     * Check if string is serialized
+     * @param $string
+     * @return bool
+     */
+    public function isSerialized($string)
+    {
+        $data = @unserialize($string);
+        return $data !== false;
+    }
+
+    public function getThingThatIsEncoded($thing, $key)
+    {
+        if ($this->isJson($thing)) {
+            $decode  = json_decode($thing, true);
+            if(array_key_exists($key, $decode)) {
+                return $decode[$key];
+            }
+        }
+        if ($this->isSerialized($thing)) {
+            $decode = unserialize($thing);
+            if(array_key_exists($key, $decode)) {
+                return $decode[$key];
+            }
+        }
+
+        return $thing;
+    }
+
 }

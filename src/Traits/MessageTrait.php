@@ -35,6 +35,9 @@ trait MessageTrait {
             ->with('data', $data)
             ->render();
 
+        // subject of message
+        $data['subject'] = $this->helper->getThingThatIsEncoded($data['subject'], 'recipient');
+
         if (config('form_mail.queue')) {
             $formMailModel->message_to_recipient = $data;
             $formMailModel->save();
@@ -43,6 +46,7 @@ trait MessageTrait {
             $formMailModel->save();
         }
     }
+
 
     /**
      * Prep confirmation message for storage
@@ -63,6 +67,10 @@ trait MessageTrait {
         $data['body'] = \View::make('pbc_form_mail::body')
             ->with('data', $data)
             ->render();
+
+        // subject of message
+        $data['subject'] = $this->helper->getThingThatIsEncoded($data['subject'], 'sender');
+
         if (config('form_mail.queue')) {
             $formMailModel->message_to_sender = $data;
             $formMailModel->save();

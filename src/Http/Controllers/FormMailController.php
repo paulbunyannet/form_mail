@@ -64,15 +64,14 @@ class FormMailController extends Controller
 
         //set up form name
         $this->helper
+            // make form name
             ->formName($data)
 
             // create recipient from the form name and the current host
-            ->recipient($data, \Route::currentRouteName());
+            ->recipient($data, \Route::currentRouteName())
 
-        if (!array_key_exists('resource', $data)) {
-            /** @var string $resource path to resources, used for path to view and localization */
-            $data['resource'] = $this->helper->resourceName(__CLASS__, __FUNCTION__);
-        }
+            /** path to resources, used for path to view and localization */
+            ->resource($data, __CLASS__, __FUNCTION__);
 
         // create fields list from the fields submitted to this handler
         $data['fields'] = [];

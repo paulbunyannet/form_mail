@@ -32,14 +32,28 @@ class FormMailHelper
     }
 
     /**
-     * create resource name from class and function
+     * setup resource string
      *
      * @param $class
      * @param $function
      * @return string
      */
-    public function resourceName($class, $function)
+    public function resource(&$data, $class, $function)
     {
+        if (array_key_exists('resource', $data)) {
+            return $this;
+        }
+        $data['resource'] = $this->makeResource($class, $function);
+        return $this;
+    }
+
+    /**
+     * Make Resource string
+     * @param $class
+     * @param $function
+     * @return string
+     */
+    public function makeResource($class, $function) {
         return str_replace('\\', '.', strtolower($class)) . '.' . strtolower($function);
     }
 

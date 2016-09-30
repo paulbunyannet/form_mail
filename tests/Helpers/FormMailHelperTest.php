@@ -90,7 +90,8 @@ class FormMailHelperTest extends \TestCase
         $helper = new FormMailHelper();
         $route = implode('-', $this->faker->words(3));
         $data = ['formName' => $route];
-        $helper->formName($data);
+        $formName = $helper->formName($data);
+        $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $formName);
         $this->assertSame($route, $data['formName']);
     }
 
@@ -101,7 +102,7 @@ class FormMailHelperTest extends \TestCase
      * @test
      * @group helpers
      */
-    public function makeRecipientNameWillReturnAString()
+    public function makeRecipientWillReturnAString()
     {
         $helper = new FormMailHelper();
         $url = $this->faker->url;
@@ -128,5 +129,40 @@ class FormMailHelperTest extends \TestCase
         $recipient = $helper->recipient($data, $form);
         $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $recipient);
         $this->assertSame($email, $data['recipient']);
+    }
+
+    /**
+     * Check to see if the resource
+     * returns in the correct format
+     *
+     * @test
+     * @group helpers
+     */
+    public function makeResourceWillReturnAString()
+    {
+        $helper = new FormMailHelper();
+        $class = implode('\\', $this->faker->words(3));
+        $function = $this->faker->word;
+        $resource = $helper->makeResource($class, $function);
+        $this->isTrue(is_string($resource));
+        $this->assertSame($resource, str_replace('\\', '.', strtolower($class)) . '.' . strtolower($function));
+    }
+
+    /**
+     * Test to make sure that the recipient
+     * will use existing if already set.
+     *
+     * @test
+     * @group helpers
+     */
+    public function resourceWillReturnStringThatIsAlreadySet()
+    {
+        $helper = new FormMailHelper();
+        $class = implode('\\', $this->faker->words(3));
+        $function = $this->faker->word;
+        $data = ['resource' => $class];
+        $resource = $helper->resource($data, $class, $function);
+        $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $resource);
+        $this->assertSame($class, $data['resource']);
     }
 }

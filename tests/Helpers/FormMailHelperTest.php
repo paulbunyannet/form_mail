@@ -11,8 +11,8 @@
  */
 
 namespace Pbc\FormMail\Tests\Helpers;
+
 use Pbc\FormMail\Helpers\FormMailHelper;
-use Mockery;
 
 /**
  * Class FormMailHelperTest
@@ -68,7 +68,7 @@ class FormMailHelperTest extends \TestCase
      * @test
      * @group helpers
      */
-    public function MakeFormNameWillReturnAString()
+    public function makeFormNameWillReturnAString()
     {
         $helper = new FormMailHelper();
         $route = implode('-', $this->faker->words(3));
@@ -89,8 +89,44 @@ class FormMailHelperTest extends \TestCase
     {
         $helper = new FormMailHelper();
         $route = implode('-', $this->faker->words(3));
-        $data['formName'] = $route;
+        $data = ['formName' => $route];
         $helper->formName($data);
         $this->assertSame($route, $data['formName']);
+    }
+
+    /**
+     * Check to see if the recipient
+     * returns in the correct format
+     *
+     * @test
+     * @group helpers
+     */
+    public function makeRecipientNameWillReturnAString()
+    {
+        $helper = new FormMailHelper();
+        $url = $this->faker->url;
+        $form = implode('_', $this->faker->words(3));
+        \Config::shouldReceive('get')->once()->with('app.url')->andReturn($url);
+        $recipientName = $helper->makeRecipient($form);
+        $this->isTrue(is_string($recipientName));
+        $this->assertSame($recipientName, $form . '@' . str_replace_first('www.', '', parse_url($url, PHP_URL_HOST)));
+    }
+
+    /**
+     * Test to make sure that the recipient
+     * will use existing if already set.
+     *
+     * @test
+     * @group helpers
+     */
+    public function recipientWillReturnStringThatIsAlreadySet()
+    {
+        $helper = new FormMailHelper();
+        $email = $this->faker->email;
+        $form = implode('_', $this->faker->words(3));
+        $data = ['recipient' => $email];
+        $recipient = $helper->recipient($data, $form);
+        $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $recipient);
+        $this->assertSame($email, $data['recipient']);
     }
 }

@@ -63,14 +63,11 @@ class FormMailController extends Controller
         }
 
         //set up form name
-        $this->helper->formName($data);
+        $this->helper
+            ->formName($data)
 
-
-        // create recipient from the form name and the current host
-        if (!array_key_exists('recipient', $data)) {
-            $data['recipient'] = $this->helper
-                ->recipient(\Route::currentRouteName());
-        }
+            // create recipient from the form name and the current host
+            ->recipient($data, \Route::currentRouteName());
 
         if (!array_key_exists('resource', $data)) {
             /** @var string $resource path to resources, used for path to view and localization */

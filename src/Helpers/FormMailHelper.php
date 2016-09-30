@@ -67,14 +67,15 @@ class FormMailHelper
     /**
      * Get form name string
      *
-     * @return mixed
+     * @return $this
      */
     public function formName(&$data)
     {
         if (array_key_exists('formName', $data)) {
-            return;
+            return $this;
         }
         $data['formName'] = $this->makeFormName();
+        return $this;
     }
 
     /**
@@ -145,12 +146,24 @@ class FormMailHelper
 
     /**
      * @param $form
+     * @return $this
+     */
+    public function recipient(&$data, $form)
+    {
+        if (array_key_exists('recipient', $data)) {
+            return $this;
+        }
+        $data['recipient'] = $this->makeRecipient($form);
+        return $this;
+    }
+
+    /**
+     * @param $form
      * @return string
      */
-    public function recipient($form)
+    public function makeRecipient($form)
     {
-        $formName = preg_replace('/[\s+\-]/', '_', $form);
+        $formName = $this->makeFormName($form);
         return $formName . '@' . str_replace_first('www.', '', parse_url(\Config::get('app.url'), PHP_URL_HOST));
     }
-    
 }

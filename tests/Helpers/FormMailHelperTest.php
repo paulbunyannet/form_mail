@@ -165,4 +165,57 @@ class FormMailHelperTest extends \TestCase
         $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $resource);
         $this->assertSame($class, $data['resource']);
     }
+
+    /**
+     * Check to see if the resource
+     * returns in the correct format
+     *
+     * @test
+     * @group helpersfailing
+     */
+    public function makeFieldsWillReturnAnArray()
+    {
+        $helper = new FormMailHelper();
+        $input = [
+            'something' => 'fo bar bazz',
+            'something-label' => 'Foo Bar Bazz',
+            'fields' => ['something']
+        ];
+        $request = \Mockery::mock();
+        $request->shouldReceive('input')->once()->with('fields')->andReturn($input['fields']);
+        $request->shouldReceive('input')->twice()->with('something-label')->andReturn($input['something-label']);
+        $request->shouldReceive('input')->twice()->with('something')->andReturn($input['something']);
+        $fields = $helper->makeFields($request);
+        $this->isTrue(is_array($fields));
+        $this->assertSame(
+            $fields,
+            [
+                ['label' => $input['something-label'], 'value' => $input['something'], 'field' => 'something']
+            ]
+        );
+    }
+
+    /**
+     * Test to make sure that the recipient
+     * will use existing if already set.
+     *
+     * @test
+     * @group helpers
+     */
+    public function fieldsWillReturnArrayThatIsAlreadySet()
+    {
+        $helper = new FormMailHelper();
+        $request = null;
+        $input = [[
+            'value' => 'fo bar bazz',
+            'label' => 'Foo Bar Bazz',
+            'field' => 'field'
+        ]];
+        $data = array(
+            'fields' => $input
+        );
+        $fields = $helper->fields($data, $request);
+        $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $fields);
+        $this->assertSame($input, $data['fields']);
+    }
 }

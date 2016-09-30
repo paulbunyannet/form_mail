@@ -111,15 +111,33 @@ class FormMailHelper
      * @param Request $request
      * @return mixed
      */
-    public function requestFields($request, &$data)
+    public function fields(&$data, $request)
     {
+        if (array_key_exists('fields', $data)) {
+            return $this;
+        }
+        $data['fields'] = $this->makeFields($request);
+        return $this;
+    }
+
+    /**
+     * Make fields array
+     *
+     * @param $request
+     * @return array
+     */
+    public function makeFields($request)
+    {
+        $data = [];
         foreach ($request->input('fields') as $field) {
             $label = ($request->input($field . '-label') ? $request->input($field . '-label') : Strings::formatForTitle($field));
             if ($label && $request->input($field)) {
-                $data['fields'][] = $this->prepField($label, $request->input($field), $field);
+                array_push($data, $this->prepField($label, $request->input($field), $field));
             }
             unset($label);
         }
+
+        return $data;
     }
 
     /**

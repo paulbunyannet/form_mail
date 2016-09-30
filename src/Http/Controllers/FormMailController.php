@@ -62,20 +62,18 @@ class FormMailController extends Controller
             return \Response::json($return);
         }
 
-        //set up form name
+        // make form name
         $this->helper
-            // make form name
             ->formName($data)
 
-            // create recipient from the form name and the current host
+        // create recipient from the form name and the current host
             ->recipient($data, \Route::currentRouteName())
 
-            /** path to resources, used for path to view and localization */
-            ->resource($data, __CLASS__, __FUNCTION__);
+        /** path to resources, used for path to view and localization */
+            ->resource($data, __CLASS__, __FUNCTION__)
 
         // create fields list from the fields submitted to this handler
-        $data['fields'] = [];
-        $this->helper->requestFields($request, $data);
+            ->fields($data, $request);
 
         // headline for return response
         if (!array_key_exists('head', $data)) {

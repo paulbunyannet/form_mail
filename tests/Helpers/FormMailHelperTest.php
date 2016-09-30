@@ -95,6 +95,38 @@ class FormMailHelperTest extends \TestCase
         $this->assertSame($route, $data['formName']);
     }
 
+        /**
+     * Check to see if the formName
+     * returns in the correct format
+     *
+     * @test
+     * @group helpers
+     */
+    public function makeSubjectWillReturnAString()
+    {
+        $helper = new FormMailHelper();
+        $formName = $this->faker->word;
+        $subject = $helper->makeSubject(['formName' => $formName]);
+        $this->assertSame($subject, ucfirst($formName).' Form Submission');
+    }
+
+    /**
+     * Test to make sure that the formName
+     * will use existing if already set.
+     *
+     * @test
+     * @group helpers
+     */
+    public function subjectWillReturnStringThatIsAlreadySet()
+    {
+        $helper = new FormMailHelper();
+        $subject = implode('-', $this->faker->words(3));
+        $data = ['subject' => $subject];
+        $formName = $helper->subject($data);
+        $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $formName);
+        $this->assertSame($subject, $data['subject']);
+    }
+
     /**
      * Check to see if the recipient
      * returns in the correct format
@@ -171,7 +203,7 @@ class FormMailHelperTest extends \TestCase
      * returns in the correct format
      *
      * @test
-     * @group helpersfailing
+     * @group helpers
      */
     public function makeFieldsWillReturnAnArray()
     {

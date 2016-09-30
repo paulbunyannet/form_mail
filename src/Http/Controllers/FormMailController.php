@@ -66,14 +66,18 @@ class FormMailController extends Controller
         $this->helper
             ->formName($data)
 
-        // create recipient from the form name and the current host
+            // create recipient from the form name and the current host
             ->recipient($data, \Route::currentRouteName())
 
-        /** path to resources, used for path to view and localization */
+            // path to resources, used for path to view and localization
             ->resource($data, __CLASS__, __FUNCTION__)
 
-        // create fields list from the fields submitted to this handler
-            ->fields($data, $request);
+            // create fields list from the fields submitted to this handler
+            ->fields($data, $request)
+
+            // Email message subject
+            ->subject($data);
+
 
         // headline for return response
         if (!array_key_exists('head', $data)) {
@@ -91,10 +95,7 @@ class FormMailController extends Controller
             ->with('data', $data)
             ->render();
 
-        // email message subject
-        if (!array_key_exists('subject', $data)) {
-            $this->helper->subject($data);
-        }
+
 
         // branding string
         if (!array_key_exists('branding', $data)) {

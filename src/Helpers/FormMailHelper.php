@@ -36,7 +36,7 @@ class FormMailHelper
      *
      * @param $class
      * @param $function
-     * @return string
+     * @return $this
      */
     public function resource(&$data, $class, $function)
     {
@@ -109,7 +109,7 @@ class FormMailHelper
      * Get request inputs and their matching label input
      *
      * @param Request $request
-     * @return mixed
+     * @return $this
      */
     public function fields(&$data, $request)
     {
@@ -144,10 +144,27 @@ class FormMailHelper
      * Set Message Subject
      *
      * @param array $data
+     * @return $this
      */
-    public function subject(&$data = [])
+    public function subject(&$data)
     {
-        $data['subject'] = Strings::formatForTitle($this->makeFormName()) . ' Form Submission';
+        if(array_key_exists('subject', $data)) {
+            return $this;
+        }
+
+        $data['subject'] = $this->makeSubject($data);
+        return $this;
+    }
+
+    /**
+     * Make default subject string
+     *
+     * @return string
+     */
+    public function makeSubject(array $data = [])
+    {
+        $formName = array_key_exists('formName', $data) ? $data['formName'] : $this->makeFormName();
+        return Strings::formatForTitle($formName) . ' Form Submission';
     }
 
     /**

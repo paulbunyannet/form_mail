@@ -61,21 +61,38 @@ class FormMailHelper
      * Get branding string
      *
      * @param array $data
+     * @return $this
      */
-    public function branding(&$data = [])
+    public function branding(&$data)
+    {
+       if (array_key_exists('branding', $data)) {
+           return $this;
+       }
+
+       $data['branding'] = $this->makeBranding($data);
+        return $this;
+    }
+
+    /**
+     * @return array|mixed|null|string
+     */
+    public function makeBranding($data=[])
     {
         $branding = config('form_mail.branding');
+
         if ($branding) {
-            $data['branding'] = $branding;
+            return $branding;
         } else {
-            $data['branding'] = \Lang::get(
+            $formName = array_key_exists('formName', $data) ? $data['formName'] : $this->makeFormName();
+            return \Lang::get(
                 'pbc_form_mail::body.branding',
                 [
-                    'form' => Strings::formatForTitle($data['formName']),
+                    'form' => Strings::formatForTitle($formName),
                     'domain' => \Config::get('app.url')
                 ]
             );
         }
+
     }
 
     /**

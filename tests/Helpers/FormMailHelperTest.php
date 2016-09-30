@@ -62,6 +62,42 @@ class FormMailHelperTest extends \TestCase
     }
 
     /**
+     * Check that if branding is set in the config
+     * it returns the right string.
+     *
+     * @test
+     * @group helpers
+     */
+    public function nameBrandingWillReturnAStringIfBrandingConfigIsSet()
+    {
+        $helper = new FormMailHelper();
+        $originalBranding = \Config::get('form_mail.branding');
+        $branding = implode('-', $this->faker->words(10));
+        // set branding string
+        \Config::set('form_mail.branding', $branding);
+        $this->assertSame($branding, $helper->makeBranding());
+        // reset branding
+        \Config::set('form_mail.branding', $originalBranding);
+    }
+
+    /**
+     * Check if a branding like was already set,
+     * and if it was it's returning what we expect.
+     *
+     * @test
+     * @group helpers
+     */
+    public function brandingWillReturnStringThatIsAlreadySet()
+    {
+        $helper = new FormMailHelper();
+        $branding = implode('-', $this->faker->words(3));
+        $data = ['branding' => $branding];
+        $setBranding = $helper->branding($data);
+        $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $setBranding);
+        $this->assertSame($branding, $data['branding']);
+    }
+
+    /**
      * Check to see if the formName
      * returns in the correct format
      *

@@ -76,8 +76,10 @@ class FormMailController extends Controller
             ->fields($data, $request)
 
             // Email message subject
-            ->subject($data);
+            ->subject($data)
 
+            // branding string
+            ->branding($data);
 
         // headline for return response
         if (!array_key_exists('head', $data)) {
@@ -95,13 +97,6 @@ class FormMailController extends Controller
             ->with('data', $data)
             ->render();
 
-
-
-        // branding string
-        if (!array_key_exists('branding', $data)) {
-            $this->helper->branding($data);
-        }
-        
         // make record in formMail model
         \DB::beginTransaction();
         try {

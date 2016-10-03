@@ -84,7 +84,7 @@ class FormMailController extends Controller
         // headline for return response
         if (!array_key_exists('head', $data)) {
             $data['head'] = \Lang::get(
-                'pbc_form_mail::body.' . \Route::currentRouteName() . '.confirmation',
+                'pbc_form_mail::body.' . \Route::currentRouteName() . '.sender',
                 [
                     'form' => Strings::formatForTitle($data['formName']),
                     'recipient' => $data['recipient'],

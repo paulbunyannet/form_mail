@@ -27,16 +27,14 @@ trait MessageTrait {
                     \App::make('url')->to('/'),
                     PHP_URL_HOST
                 ),
-                'time' => Carbon::now()
+                'time' => Carbon::now(),
+
             ]
         );
         // body of email message
         $data['body'] = \View::make('pbc_form_mail::body')
             ->with('data', $data)
             ->render();
-
-        // subject of message
-        $data['subject'] = $this->helper->getThingThatIsEncoded($data['subject'], 'recipient');
 
         if (config('form_mail.queue')) {
             $formMailModel->message_to_recipient = $data;
@@ -58,7 +56,7 @@ trait MessageTrait {
     {
         $data = $formMailModel->toArray();
         $data['head'] = \Lang::get(
-            'pbc_form_mail::body.' . \Route::currentRouteName() . '.confirmation',
+            'pbc_form_mail::body.' . \Route::currentRouteName() . '.sender',
             [
                 'form' => Strings::formatForTitle($formMailModel->form),
                 'recipient' => $formMailModel->recipient,
@@ -67,9 +65,6 @@ trait MessageTrait {
         $data['body'] = \View::make('pbc_form_mail::body')
             ->with('data', $data)
             ->render();
-
-        // subject of message
-        $data['subject'] = $this->helper->getThingThatIsEncoded($data['subject'], 'sender');
 
         if (config('form_mail.queue')) {
             $formMailModel->message_to_sender = $data;

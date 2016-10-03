@@ -5,7 +5,9 @@ namespace Pbc\FormMail\Jobs;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
+use Pbc\FormMail\Helpers\FormMailHelper;
 
 /**
  * Class FormMailSendMessage
@@ -46,7 +48,7 @@ class FormMailSendMessage extends FormMailJob implements ShouldQueue
                 function ($message) {
                     $message->to($this->formMail->recipient)
                         ->from($this->formMail->sender)
-                        ->subject($this->formMail->subject);
+                        ->subject(Encoded::getThingThatIsEncoded($this->formMail->subject, FormMailHelper::RECIPIENT));
                 });
 
             $this->validateMailSent();

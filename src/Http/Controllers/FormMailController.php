@@ -5,7 +5,7 @@ namespace Pbc\FormMail\Http\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
-use Pbc\Bandolier\Type\Strings;
+use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Helpers\FormMailHelper;
 use Pbc\FormMail\Traits\QueueTrait;
@@ -69,6 +69,9 @@ class FormMailController extends Controller
             // create recipient from the form name and the current host
             ->recipient($data, \Route::currentRouteName())
 
+            // set sender key
+            ->sender($data, $request->input('email'))
+
             // path to resources, used for path to view and localization
             ->resource($data, __CLASS__, __FUNCTION__)
 
@@ -79,23 +82,14 @@ class FormMailController extends Controller
             ->subject($data)
 
             // branding string
-            ->branding($data);
+            ->branding($data)
 
-        // headline for return response
-        if (!array_key_exists('head', $data)) {
-            $data['head'] = \Lang::get(
-                'pbc_form_mail::body.' . \Route::currentRouteName() . '.sender',
-                [
-                    'form' => Strings::formatForTitle($data['formName']),
-                    'recipient' => $data['recipient'],
-                ]
-            );
-        }
+            // headline for return response
+            ->head($data)
 
         /** @var string $response response that will be passed as success */
-        $data['response'] = \View::make('pbc_form_mail::body')
-            ->with('data', $data)
-            ->render();
+            ->response($data);
+
 
         // make record in formMail model
         \DB::beginTransaction();
@@ -103,7 +97,7 @@ class FormMailController extends Controller
             $formMailModelData = [
                 'form' => $data['formName'],
                 'resource' => $data['resource'],
-                'sender' => $request->input('email'),
+                'sender' => $data['sender'],
                 'recipient' => $data['recipient'],
                 'fields' => $data['fields'],
                 'subject' => $data['subject'],
@@ -112,6 +106,7 @@ class FormMailController extends Controller
                 'confirmation_sent_to_sender' => false,
             ];
             $formMailModel = new FormMail($formMailModelData);
+            $formMailModel->save();
             $this->messageToRecipient($formMailModel);
             $this->messageToSender($formMailModel);
         } catch (\Exception $ex) {
@@ -122,7 +117,6 @@ class FormMailController extends Controller
             // @codeCoverageIgnoreEnd
         }
         \DB::commit();
-
         // if we should be queueing this message and confirmation,
         // then do that here, otherwise email out the messages
         // below.
@@ -133,7 +127,7 @@ class FormMailController extends Controller
                 $this->send($formMailModel);
             }
             // return the response message as a success
-            $return['success'] = [$data['response']];
+            $return['success'] = [Encoded::getThingThatIsEncoded($data['response'], FormMailHelper::SENDER)];
         } catch (\Exception $ex) {
             $return['error'] = [$ex->getMessage()];
         }

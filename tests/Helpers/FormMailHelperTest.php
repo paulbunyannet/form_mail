@@ -287,132 +287,56 @@ class FormMailHelperTest extends \TestCase
         $this->assertSame($input, $data['fields']);
     }
 
-    /**
-     * Check that string that is malformed json will return false
-     *
-     * @test
-     * @group helper-utilities
-     */
-    public function checkIsJsonReturnsFalseWithMalformedString()
-    {
-        $helper = new FormMailHelper();
-        $this->assertFalse($helper->isJson('bla bla bla'));
-    }
-    /**
-     * Check that string that is json will return true
-     *
-     * @test
-     * @group helper-utilities
-     */
-    public function checkIsJsonReturnsTrueIfValidJson()
-    {
-        $helper = new FormMailHelper();
-        $this->assertTrue($helper->isJson('["1"]'));
-        $this->assertTrue($helper->isJson('{"abc":"123"}'));
-    }
-
 
     /**
-     * Check that string that is malformed serialized will return false
+     * Test to make sure that the head method
+     * will use existing if already set.
      *
      * @test
-     * @group helper-utilities
+     * @group helpers
      */
-    public function checkIsSerializedReturnsFalseWithMalformedString()
+    public function head_will_not_set_different_value_if_already_exists()
     {
         $helper = new FormMailHelper();
-        $this->assertFalse($helper->isSerialized('bla bla bla'));
-    }
-    /**
-     * Check that string that is serialized will return true
-     *
-     * @test
-     * @group helper-utilities
-     */
-    public function checkIsSerializedReturnsTrueIfValidSerializedString()
-    {
-        $helper = new FormMailHelper();
-        $this->assertTrue($helper->isSerialized(serialize([1,2,3])));
+        $class = implode('\\', $this->faker->words(3));
+        $data = ['head' => $class];
+        $resource = $helper->head($data);
+        $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $resource);
+        $this->assertSame($class, $data['head']);
     }
 
     /**
-     * Check that we can get a key from a json string
+     * Test to make sure that the sender method
+     * will use existing if already set.
      *
      * @test
-     * @group helper-utilities
+     * @group helpers
      */
-    public function checkWeCanGetAnElementFromAStringThatIsJson()
+    public function sender_will_not_set_different_value_if_already_exists()
     {
         $helper = new FormMailHelper();
-        $thing = 'foo';
-        $value = 'bar';
-        $string = json_encode([$thing => $value]);
-        $this->assertSame($value, $helper->getThingThatIsEncoded($string, $thing));
-
+        $class = implode('\\', $this->faker->words(3));
+        $data = ['sender' => $class];
+        $resource = $helper->sender($data);
+        $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $resource);
+        $this->assertSame($class, $data['sender']);
     }
 
     /**
-     * Check that we can't get a key from a json string if key is missing
+     * Test to make sure that the response method
+     * will use existing if already set.
      *
      * @test
-     * @group helper-utilities
+     * @group helpers
      */
-    public function checkWeDoNotGetAnElementFromAStringThatIsJsonIfKeyIsMissing()
+    public function response_will_not_set_different_value_if_already_exists()
     {
         $helper = new FormMailHelper();
-        $thing = 'foo';
-        $value = 'bar';
-        $string = json_encode([$thing => $value]);
-        $this->assertSame($string, $helper->getThingThatIsEncoded($string, 'baz'));
-
+        $class = implode('\\', $this->faker->words(3));
+        $data = ['response' => $class];
+        $resource = $helper->response($data);
+        $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $resource);
+        $this->assertSame($class, $data['response']);
     }
-
-    /**
-     * Check that we can get a key from a serialized string
-     *
-     * @test
-     * @group helper-utilities
-     */
-    public function checkWeCanGetAnElementFromAStringThatIsSerialized()
-    {
-        $helper = new FormMailHelper();
-        $thing = 'foo';
-        $value = 'bar';
-        $string = serialize([$thing => $value]);
-        $this->assertSame($value, $helper->getThingThatIsEncoded($string, $thing));
-
-    }
-    /**
-     * Check that we don't get a key from a serialized string if the key is missing
-     *
-     * @test
-     * @group helper-utilities
-     */
-    public function checkWeDoNotGetAnElementFromAStringThatIsSerializedIfKeyIsMissing()
-    {
-        $helper = new FormMailHelper();
-        $thing = 'foo';
-        $value = 'bar';
-        $string = serialize([$thing => $value]);
-        $this->assertSame($string, $helper->getThingThatIsEncoded($string, 'baz'));
-
-    }
-
-    /**
-     * Check that we get the string back if it's neither serialized or json
-     *
-     * @test
-     * @group helper-utilities
-     */
-    public function checkThatWeGetTheElementBackIfItIsNotFormatted()
-    {
-        $helper = new FormMailHelper();
-        $thing = 'foo';
-        $value = 'bar';
-        $string = $thing .' '. $value;
-        $this->assertSame($string, $helper->getThingThatIsEncoded($string, $thing));
-
-    }
-
-
+    
 }

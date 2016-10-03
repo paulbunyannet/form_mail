@@ -2,11 +2,12 @@
 
 namespace Pbc\FormMail\Traits;
 
-use Pbc\Bandolier\Type\Strings;
+use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
-use Carbon\Carbon;
+use Pbc\FormMail\Helpers\FormMailHelper;
 
-trait MessageTrait {
+trait MessageTrait
+{
 
     /**
      * Prep message that is sent to recipient for storage
@@ -18,21 +19,19 @@ trait MessageTrait {
     {
 
         $data = $formMailModel->toArray();
-        // headline for email message
-        $data['head'] = \Lang::get(
-            'pbc_form_mail::body.' . \Route::currentRouteName() . '.recipient',
-            [
-                'form' => Strings::formatForTitle($formMailModel->form),
-                'domain' => parse_url(
-                    \App::make('url')->to('/'),
-                    PHP_URL_HOST
-                ),
-                'time' => Carbon::now(),
+        // Go though each of the keys in the form mail model and
+        // check if they are encoded and that there's
+        // a key for recipient in it.
 
-            ]
-        );
+        foreach (array_keys($data) as $key) {
+            $value = Encoded::getThingThatIsEncoded($data[$key], FormMailHelper::RECIPIENT);
+            if ($value !== $data[$key]) {
+                $data[$key] = $value;
+            }
+        }
+
         // body of email message
-        $data['body'] = \View::make('pbc_form_mail::body')
+        $data['body'] = \View::make(FormMailHelper::resourceRoot())
             ->with('data', $data)
             ->render();
 
@@ -54,15 +53,19 @@ trait MessageTrait {
      */
     public function messageToSender(FormMail $formMailModel)
     {
+
+
         $data = $formMailModel->toArray();
-        $data['head'] = \Lang::get(
-            'pbc_form_mail::body.' . \Route::currentRouteName() . '.sender',
-            [
-                'form' => Strings::formatForTitle($formMailModel->form),
-                'recipient' => $formMailModel->recipient,
-            ]
-        );
-        $data['body'] = \View::make('pbc_form_mail::body')
+        // Go though each of the keys in the form mail model and
+        // check if they are encoded and that there's
+        // a key for recipient in it.
+        foreach (array_keys($data) as $key) {
+            $value = Encoded::getThingThatIsEncoded($data[$key], FormMailHelper::RECIPIENT);
+            if ($value !== $data[$key]) {
+                $data[$key] = $value;
+            }
+        }
+        $data['body'] = \View::make(FormMailHelper::resourceRoot())
             ->with('data', $data)
             ->render();
 

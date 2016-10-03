@@ -14,6 +14,7 @@ namespace Pbc\FormMail\Jobs;
 
 use App\Jobs\Job;
 use Pbc\FormMail\FormMail;
+use Pbc\FormMail\Helpers\FormMailHelper;
 use Pbc\Premailer;
 
 class FormMailJob extends Job

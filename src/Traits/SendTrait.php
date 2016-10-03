@@ -2,7 +2,9 @@
 
 namespace Pbc\FormMail\Traits;
 
+use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
+use Pbc\FormMail\Helpers\FormMailHelper;
 
 trait SendTrait
 {
@@ -19,9 +21,9 @@ trait SendTrait
         // If it fails then return the exception as the
         // response.
         try {
-            $recipientSubject = $this->helper->getThingThatIsEncoded($formMailModel->subject, 'recipient');
-            $recipientTo = $formMailModel->recipient;
-            $recipientFrom = $formMailModel->sender;
+            $recipientSubject = Encoded::getThingThatIsEncoded($formMailModel->subject, FormMailHelper::RECIPIENT);
+            $recipientTo = $formMailModel->{FormMailHelper::RECIPIENT};
+            $recipientFrom = $formMailModel->{FormMailHelper::SENDER};
             \Mail::send(
                 'pbc_form_mail_template::body',
                 ['data' => $formMailModel->message_to_recipient],
@@ -38,9 +40,9 @@ trait SendTrait
                 // try and send out message to sender for conformation.
                 // If it fails then return the exception as the
                 // response.
-                $senderSubject = $this->helper->getThingThatIsEncoded($formMailModel->subject, 'sender');
-                $senderTo = $formMailModel->sender;
-                $senderFrom = $formMailModel->recipient;
+                $senderSubject = Encoded::getThingThatIsEncoded($formMailModel->subject, FormMailHelper::SENDER);
+                $senderTo = $formMailModel->{FormMailHelper::SENDER};
+                $senderFrom = $formMailModel->{FormMailHelper::RECIPIENT};
                 \Mail::send(
                     'pbc_form_mail_template::body',
                     ['data' => $formMailModel->message_to_sender],

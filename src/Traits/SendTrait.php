@@ -5,6 +5,7 @@ namespace Pbc\FormMail\Traits;
 use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Helpers\FormMailHelper;
+use Pbc\FormMail\Http\Controllers\FormMailController;
 
 trait SendTrait
 {
@@ -21,9 +22,9 @@ trait SendTrait
         // If it fails then return the exception as the
         // response.
         try {
-            $recipientSubject = Encoded::getThingThatIsEncoded($formMailModel->subject, FormMailHelper::RECIPIENT);
-            $recipientTo = $formMailModel->{FormMailHelper::RECIPIENT};
-            $recipientFrom = $formMailModel->{FormMailHelper::SENDER};
+            $recipientSubject = Encoded::getThingThatIsEncoded($formMailModel->subject, FormMailController::RECIPIENT);
+            $recipientTo = $formMailModel->{FormMailController::RECIPIENT};
+            $recipientFrom = $formMailModel->{FormMailController::SENDER};
             \Mail::send(
                 'pbc_form_mail_template::body',
                 ['data' => $formMailModel->message_to_recipient],
@@ -40,9 +41,9 @@ trait SendTrait
                 // try and send out message to sender for conformation.
                 // If it fails then return the exception as the
                 // response.
-                $senderSubject = Encoded::getThingThatIsEncoded($formMailModel->subject, FormMailHelper::SENDER);
-                $senderTo = $formMailModel->{FormMailHelper::SENDER};
-                $senderFrom = $formMailModel->{FormMailHelper::RECIPIENT};
+                $senderSubject = Encoded::getThingThatIsEncoded($formMailModel->subject, FormMailController::SENDER);
+                $senderTo = $formMailModel->{FormMailController::SENDER};
+                $senderFrom = $formMailModel->{FormMailController::RECIPIENT};
                 \Mail::send(
                     'pbc_form_mail_template::body',
                     ['data' => $formMailModel->message_to_sender],

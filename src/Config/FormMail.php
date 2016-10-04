@@ -1,14 +1,61 @@
 <?php
+/**
+ * Configuration for Form Mail
+ */
 return [
+
+    /**
+     * Custom branding string for email message.
+     * It is inserted at the top of the
+     * email message. If unneeded just leave blank
+     */
     'branding' => '',
-    'rules' => [],
+
+    /**
+     * Global rules for form-mail validation
+     */
+    'rules' => [
+        'email' => 'required|email',
+        'name' => 'required',
+        'fields' => 'required|array'
+    ],
+
+    /**
+     * Route specific rules for form validation
+     */
     'route_rules' => [
         'form-mail' => [
             'send' => []
         ],
+        'contact-us' => []
     ],
+
+    /**
+     * Route specific mail recipient if empty the recipient will be auto generated
+     */
+    'recipient' => [
+        'form-mail' => [
+            'send' => 'contact@'.str_replace_first('www.', '', parse_url(env('APP_URL', 'http://example.com'), PHP_URL_HOST))
+        ],
+        'contact-us' => 'contact@'.str_replace_first('www.', '', parse_url(env('APP_URL', 'http://example.com'), PHP_URL_HOST))
+    ],
+
+    /**
+     * Whether to queue the message and have it
+     * sent out on the next cycle or send
+     * out immediately
+     */
     'queue' => true,
+
+    /**
+     * Whether or not to send back a confirmation
+     * message back to sender
+     */
     'confirmation' => false,
+
+    /**
+     * Delay to put on messages in queue
+     */
     'delay' => [
         'send_message' => 15,
         'send_confirmation' => 15

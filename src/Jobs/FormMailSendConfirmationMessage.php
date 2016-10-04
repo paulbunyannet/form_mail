@@ -9,6 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Helpers\FormMailHelper;
+use Pbc\FormMail\Http\Controllers\FormMailController;
 use Pbc\Premailer;
 use Pbc\Bandolier\Type\Encoded;
 
@@ -57,7 +58,7 @@ class FormMailSendConfirmationMessage extends FormMailJob implements ShouldQueue
             \Mail::send('pbc_form_mail_template::body', ['data' => $this->formMail->message_to_sender], function ($message) {
                 $message->to($this->formMail->sender)
                     ->from($this->formMail->recipient)
-                    ->subject(Encoded::getThingThatIsEncoded($this->formMail->subject, FormMailHelper::SENDER));
+                    ->subject(Encoded::getThingThatIsEncoded($this->formMail->subject, FormMailController::SENDER));
             });
 
             $this->validateMailSent();

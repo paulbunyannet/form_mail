@@ -21,6 +21,22 @@ use Pbc\Premailer;
 class FormMailController extends Controller
 {
     use QueueTrait, SendTrait, MessageTrait, RulesTrait;
+
+    /**
+     * path to resources
+     */
+    const RESOURCE_ROOT = 'pbc_form_mail';
+
+    /**
+     * recipient key
+     */
+    const RECIPIENT = "recipient";
+
+    /**
+     * recipient value
+     */
+    const SENDER = "sender";
+
     /**
      * @var array
      */
@@ -127,7 +143,7 @@ class FormMailController extends Controller
                 $this->send($formMailModel);
             }
             // return the response message as a success
-            $return['success'] = [Encoded::getThingThatIsEncoded($data['response'], FormMailHelper::SENDER)];
+            $return['success'] = [Encoded::getThingThatIsEncoded($data['response'], self::SENDER)];
         } catch (\Exception $ex) {
             $return['error'] = [$ex->getMessage()];
         }

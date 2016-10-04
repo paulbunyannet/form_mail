@@ -5,6 +5,7 @@ namespace Pbc\FormMail\Traits;
 use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Helpers\FormMailHelper;
+use Pbc\FormMail\Http\Controllers\FormMailController;
 
 trait MessageTrait
 {
@@ -24,7 +25,7 @@ trait MessageTrait
         // a key for recipient in it.
 
         foreach (array_keys($data) as $key) {
-            $value = Encoded::getThingThatIsEncoded($data[$key], FormMailHelper::RECIPIENT);
+            $value = Encoded::getThingThatIsEncoded($data[$key], FormMailController::RECIPIENT);
             if ($value !== $data[$key]) {
                 $data[$key] = $value;
             }
@@ -60,7 +61,7 @@ trait MessageTrait
         // check if they are encoded and that there's
         // a key for recipient in it.
         foreach (array_keys($data) as $key) {
-            $value = Encoded::getThingThatIsEncoded($data[$key], FormMailHelper::RECIPIENT);
+            $value = Encoded::getThingThatIsEncoded($data[$key], FormMailController::RECIPIENT);
             if ($value !== $data[$key]) {
                 $data[$key] = $value;
             }

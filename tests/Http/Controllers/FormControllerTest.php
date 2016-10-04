@@ -254,6 +254,7 @@ class FormControllerTest extends \TestCase
      * in the form_mail db for this message that will be
      * marked as sent, but no confirmation will be sent
      * @test
+     * @group failing
      */
     public function it_will_send_right_away_but_not_send_confirmation()
     {
@@ -261,6 +262,7 @@ class FormControllerTest extends \TestCase
 
         $parameters = $this->fields();
         $this->call('POST', 'form-mail/send', $parameters);
+        $this->assertResponseOk();
 
         $this->resetOriginalConfiguration();
 

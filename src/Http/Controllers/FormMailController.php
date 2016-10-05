@@ -118,6 +118,7 @@ class FormMailController extends Controller
                 'fields' => $data['fields'],
                 'subject' => $data['subject'],
                 'branding' => $data['branding'],
+                'head' => $data['head'],
                 'message_sent_to_recipient' => false,
                 'confirmation_sent_to_sender' => false,
             ];

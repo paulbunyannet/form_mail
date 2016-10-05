@@ -20,6 +20,7 @@ class FormMail extends Model
         'message_to_sender',
         'subject',
         'branding',
+        'head',
         'message_sent_to_recipient',
         'confirmation_sent_to_sender',
     ];

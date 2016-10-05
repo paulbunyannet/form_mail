@@ -18,7 +18,6 @@ trait MessageTrait
      */
     public function messageToRecipient(FormMail $formMailModel)
     {
-
         $data = $formMailModel->toArray();
         // Go though each of the keys in the form mail model and
         // check if they are encoded and that there's
@@ -54,14 +53,12 @@ trait MessageTrait
      */
     public function messageToSender(FormMail $formMailModel)
     {
-
-
         $data = $formMailModel->toArray();
         // Go though each of the keys in the form mail model and
         // check if they are encoded and that there's
         // a key for recipient in it.
         foreach (array_keys($data) as $key) {
-            $value = Encoded::getThingThatIsEncoded($data[$key], FormMailController::RECIPIENT);
+            $value = Encoded::getThingThatIsEncoded($data[$key], FormMailController::SENDER);
             if ($value !== $data[$key]) {
                 $data[$key] = $value;
             }

@@ -13,6 +13,7 @@
 namespace Pbc\FormMail\Tests\Helpers;
 
 use Pbc\FormMail\Helpers\FormMailHelper;
+use Pbc\FormMail\Http\Controllers\FormMailController;
 
 /**
  * Class FormMailHelperTest
@@ -337,6 +338,25 @@ class FormMailHelperTest extends \TestCase
         $resource = $helper->response($data);
         $this->assertInstanceOf('\\Pbc\\FormMail\\Helpers\\FormMailHelper', $resource);
         $this->assertSame($class, $data['response']);
+    }
+
+    /**
+     * Test to make sure that the recipient method
+     * will use existing config if already set.
+     *
+     * @test
+     * @group helpers
+     */
+    public function recipient_will_be_pulled_from_config_if_key_exists()
+    {
+        $helper = new FormMailHelper();
+        $email = $this->faker->email();
+        $form = $this->faker->word;
+        config(['form_mail.recipient.'.$form => $email]);
+        $data = [];
+
+        $helper->recipient($data, $form);
+        $this->assertSame($data[FormMailController::RECIPIENT], $email);
     }
     
 }

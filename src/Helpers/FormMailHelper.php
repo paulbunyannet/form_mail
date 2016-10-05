@@ -347,6 +347,11 @@ class FormMailHelper
         if (array_key_exists(FormMailController::RECIPIENT, $data)) {
             return $this;
         }
+        $recipient = \Config::get('form_mail.recipient.'.$form);
+        if($recipient) {
+            $data[FormMailController::RECIPIENT] = $recipient;
+            return $this;
+        }
         $data[FormMailController::RECIPIENT] = $this->makeRecipient($form);
         return $this;
     }

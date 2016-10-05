@@ -27,18 +27,12 @@ return [
         'form-mail' => [
             'send' => []
         ],
-        'contact-us' => []
     ],
 
     /**
      * Route specific mail recipient if empty the recipient will be auto generated
      */
-    'recipient' => [
-        'form-mail' => [
-            'send' => 'contact@'.str_replace_first('www.', '', parse_url(env('APP_URL', 'http://example.com'), PHP_URL_HOST))
-        ],
-        'contact-us' => 'contact@'.str_replace_first('www.', '', parse_url(env('APP_URL', 'http://example.com'), PHP_URL_HOST))
-    ],
+    'recipient' => [],
 
     /**
      * Whether to queue the message and have it

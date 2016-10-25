@@ -2,10 +2,10 @@
 namespace Pbc\FormMail\Generators;
 
 /**
- * FormMailDecorator
+ * FormMailGenerator
  *
  * Created 10/4/16 9:29 AM
- * Form Mail decorator
+ * Form Mail generator
  *
  * @author Nate Nolting <naten@paulbunyan.net>
  * @package Pbc\FormMail\Decorators

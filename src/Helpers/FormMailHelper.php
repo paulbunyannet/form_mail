@@ -3,7 +3,7 @@
  * FormMailHelper
  *
  * Created 5/9/16 11:08 PM
- * Helpers for the form mail controller
+ * Helpers for the form mail
  *
  * @author Nate Nolting <naten@paulbunyan.net>
  * @package Pbc\FormMail\Helpers
@@ -14,6 +14,11 @@ namespace Pbc\FormMail\Helpers;
 use Pbc\Bandolier\Type\Encoded;
 use Pbc\Bandolier\Type\Strings;
 use Pbc\FormMail\Decorators\FormMailPremailDecorator;
+use Pbc\FormMail\FormMail;
+use Pbc\FormMail\Helpers\MessageHelper;
+use Pbc\FormMail\Helpers\QueueHelper;
+use Pbc\FormMail\Helpers\RulesHelper;
+use Pbc\FormMail\Helpers\SendHelper;
 use Pbc\FormMail\Http\Controllers\FormMailController;
 use Pbc\FormMail\Decorators\FormMailDecorator;
 use Pbc\FormMail\Generators\FormMailGenerator;
@@ -25,8 +30,53 @@ use Pbc\Premailer;
  */
 class FormMailHelper
 {
+    /**
+     * @param FormMail $formMailModel
+     * @param Premailer $premailer
+     * @return array
+     */
+    public function messageToRecipient(FormMail $formMailModel, Premailer $premailer)
+    {
+        return MessageHelper::messageToRecipient($formMailModel, $premailer);
+    }
 
+    /**
+     * @param FormMail $formMailModel
+     * @param Premailer $premailer
+     * @return array
+     */
+    public function messageToSender(FormMail $formMailModel, Premailer $premailer)
+    {
+        return MessageHelper::messageToSender($formMailModel, $premailer);
 
+    }
+
+    /**
+     * @param FormMail $formMailModel
+     * @param Premailer $premailer
+     * @param int $defaultDelay
+     */
+    public function queue(FormMail $formMailModel, Premailer $premailer, $defaultDelay=10)
+    {
+        return QueueHelper::queue($formMailModel, $premailer, $defaultDelay);
+    }
+
+    /**
+     * @param array $rules
+     * @return array
+     */
+    public function prepRules(array $rules = [])
+    {
+        return RulesHelper::prepRules([]);
+    }
+
+    /**
+     * @param FormMail $formMailModel
+     */
+    public function send(FormMail $formMailModel)
+    {
+        return SendHelper::send($formMailModel);
+    }
 
     /**
      * setup resource string
@@ -198,6 +248,7 @@ class FormMailHelper
             'recipient' => FormMailController::RECIPIENT,
             'sender' => FormMailController::SENDER,
             'time' => \Carbon\Carbon::now(),
+            'formName' => $this->makeFormName()
         ]));
         return $decorator->resourceInject();
     }

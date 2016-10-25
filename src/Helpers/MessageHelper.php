@@ -1,14 +1,14 @@
 <?php
 
-namespace Pbc\FormMail\Traits;
+namespace Pbc\FormMail\Helpers;
 
-use FormMailHelper;
 use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Http\Controllers\FormMailController;
 use Pbc\Premailer;
+use View;
 
-trait MessageTrait
+class MessageHelper
 {
 
     /**
@@ -17,7 +17,7 @@ trait MessageTrait
      * @param \Pbc\FormMail\FormMail $formMailModel
      * @return array
      */
-    public function messageToRecipient(FormMailHelper $formMailModel, Premailer $premailer)
+    public static function messageToRecipient(FormMail $formMailModel, Premailer $premailer)
     {
         $data = $formMailModel->toArray();
         // Go though each of the keys in the form mail model and
@@ -32,7 +32,7 @@ trait MessageTrait
         }
 
         // body of email message
-        $data['body'] = \View::make(FormMailHelper::resourceRoot())
+        $data['body'] = View::make(\FormMailHelper::resourceRoot())
             ->with('data', $data)
             ->render();
 
@@ -40,7 +40,7 @@ trait MessageTrait
             $formMailModel->message_to_recipient = $data;
             $formMailModel->save();
         } else {
-            $formMailModel->message_to_recipient = FormMailHelper::premailer($premailer, $data);
+            $formMailModel->message_to_recipient = \FormMailHelper::premailer($premailer, $data);
             $formMailModel->save();
         }
     }
@@ -52,7 +52,7 @@ trait MessageTrait
      * @param \Pbc\FormMail\FormMail $formMailModel
      * @return array
      */
-    public function messageToSender(FormMailHelper $formMailModel, Premailer $premailer)
+    public static function messageToSender(FormMail $formMailModel, Premailer $premailer)
     {
         $data = $formMailModel->toArray();
         // Go though each of the keys in the form mail model and
@@ -64,7 +64,7 @@ trait MessageTrait
                 $data[$key] = $value;
             }
         }
-        $data['body'] = \View::make(FormMailHelper::resourceRoot())
+        $data['body'] = View::make(\FormMailHelper::resourceRoot())
             ->with('data', $data)
             ->render();
 
@@ -72,7 +72,7 @@ trait MessageTrait
             $formMailModel->message_to_sender = $data;
             $formMailModel->save();
         } else {
-            $formMailModel->message_to_sender = FormMailHelper::premailer($premailer, $data);
+            $formMailModel->message_to_sender = \FormMailHelper::premailer($premailer, $data);
             $formMailModel->save();
         }
     }

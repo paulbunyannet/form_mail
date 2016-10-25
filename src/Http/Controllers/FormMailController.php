@@ -4,15 +4,13 @@ namespace Pbc\FormMail\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 
+use DB;
 use Illuminate\Http\Request;
 use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
-use Pbc\FormMail\Helpers\FormMailHelper;
-use Pbc\FormMail\Traits\QueueTrait;
-use Pbc\FormMail\Traits\RulesTrait;
-use Pbc\FormMail\Traits\SendTrait;
-use Pbc\FormMail\Traits\MessageTrait;
 use Pbc\Premailer;
+use Response;
+use Validator;
 
 /**
  * Class FormMailController
@@ -20,8 +18,6 @@ use Pbc\Premailer;
  */
 class FormMailController extends Controller
 {
-    use QueueTrait, SendTrait, MessageTrait, RulesTrait;
-
     /**
      * path to resources
      */
@@ -54,11 +50,11 @@ class FormMailController extends Controller
      * FormMailController constructor.
      * @param Premailer $premailer
      */
-    public function __construct(Premailer $premailer, FormMailHelper $helper)
+    public function __construct(Premailer $premailer, \Pbc\FormMail\Helpers\FormMailHelper $helper)
     {
         $this->premailer = $premailer;
         $this->helper = $helper;
-        $this->prepRules();
+        $this->rules = \FormMailHelper::prepRules();
     }
 
     /**
@@ -71,11 +67,11 @@ class FormMailController extends Controller
             'queue' => config('form_mail.queue'),
             'confirmation' => config('form_mail.confirmation'),
         ];
-        
-        $validator = \Validator::make($request->all(), $this->rules, []);
+
+        $validator = Validator::make($request->all(), $this->rules, []);
         if ($validator->fails()) {
             $return['error'] = $validator->errors()->all();
-            return \Response::json($return);
+            return Response::json($return);
         }
 
         // make form name
@@ -108,7 +104,7 @@ class FormMailController extends Controller
 
 
         // make record in formMail model
-        \DB::beginTransaction();
+        DB::beginTransaction();
         try {
             $formMailModelData = [
                 'form' => $data['formName'],
@@ -124,24 +120,24 @@ class FormMailController extends Controller
             ];
             $formMailModel = new FormMail($formMailModelData);
             $formMailModel->save();
-            $this->messageToRecipient($formMailModel);
-            $this->messageToSender($formMailModel);
+            \FormMailHelper::messageToRecipient($formMailModel, $this->premailer);
+            \FormMailHelper::messageToSender($formMailModel, $this->premailer);
         } catch (\Exception $ex) {
             // @codeCoverageIgnoreStart
-            \DB::rollBack();
+            DB::rollBack();
             $return['error'] = [$ex->getMessage()];
-            return \Response::json($return);
+            return Response::json($return);
             // @codeCoverageIgnoreEnd
         }
-        \DB::commit();
-        // if we should be queueing this message and confirmation,
+        DB::commit();
+        // if    we should be queueing this message and confirmation,
         // then do that here, otherwise email out the messages
         // below.
         try {
             if (config('form_mail.queue')) {
-                $this->queue($formMailModel);
+                \FormMailHelper::queue($formMailModel, $this->premailer);
             } else {
-                $this->send($formMailModel);
+                \FormMailHelper::send($formMailModel);
             }
             // return the response message as a success
             $return['success'] = [Encoded::getThingThatIsEncoded($data['response'], self::SENDER)];
@@ -149,7 +145,7 @@ class FormMailController extends Controller
             $return['error'] = [$ex->getMessage()];
         }
 
-        return \Response::json($return);
+        return Response::json($return);
 
     }
 

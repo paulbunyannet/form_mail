@@ -37,6 +37,7 @@ class FormMailServiceProvider extends ServiceProvider
     public function register()
     {
         include dirname(__DIR__).'/Http/routes.php';
+        $this->app->bind('formMailHelper', 'Pbc\FormMail\Helpers\FormMailHelper');
         $this->app->make('Pbc\FormMail\Http\Controllers\FormMailController');
     }
 }

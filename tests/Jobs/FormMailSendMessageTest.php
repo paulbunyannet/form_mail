@@ -232,16 +232,15 @@ class FormMailSendMessageTest extends \TestCase
         $html = [
             'resource' => 'bla_bla_bla',
             'form' => 'some_form',
-            'subject' => 'this is the subject' ,
+            'subject' => ['sender' => 'sender subject', 'recipient' => 'recipient subject'] ,
             'sender' => $sender,
             'recipient' => $recipient,
             'fields' => [],
-            'subject' => 'Subject',
             'branding' => '',
             'confirmation_sent_to_sender' => false,
             'message_sent_to_recipient' => false,
-            'message_to_sender' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph()],
-            'message_to_recipient' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph()],
+            'message_to_sender' => ['subject' => 'sender subject', 'html' => $faker->paragraph(), 'text' => $faker->paragraph()],
+            'message_to_recipient' => ['subject' => 'recipient subject', 'html' => $faker->paragraph(), 'text' => $faker->paragraph()],
             'html' => $faker->paragraph(),
             'text' => $faker->paragraph(),
         ];
@@ -282,7 +281,7 @@ class FormMailSendMessageTest extends \TestCase
                 // mock subject method
                 $mock->shouldReceive('subject')
                     ->once()
-                    ->with($formMailMock->subject);
+                    ->with($formMailMock->message_to_recipient['subject']);
                 $closure($mock);
                 return true;
 

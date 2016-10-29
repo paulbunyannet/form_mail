@@ -8,6 +8,10 @@ use DB;
 use Illuminate\Http\Request;
 use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
+use Pbc\FormMail\Traits\MessageTrait;
+use Pbc\FormMail\Traits\QueueTrait;
+use Pbc\FormMail\Traits\RulesTrait;
+use Pbc\FormMail\Traits\SendTrait;
 use Pbc\Premailer;
 use Response;
 use Validator;
@@ -18,6 +22,8 @@ use Validator;
  */
 class FormMailController extends Controller
 {
+    use MessageTrait, QueueTrait, RulesTrait, SendTrait;
+
     /**
      * path to resources
      */
@@ -99,50 +105,18 @@ class FormMailController extends Controller
             // headline for return response
             ->head($data)
 
-        /** @var string $response response that will be passed as success */
+            /** @var string $response response that will be passed as success */
             ->response($data);
 
 
-        // make record in formMail model
-        DB::beginTransaction();
+        // make record in formMail model and put message in job queue
         try {
-            $formMailModelData = [
-                'form' => $data['formName'],
-                'resource' => $data['resource'],
-                'sender' => $data['sender'],
-                'recipient' => $data['recipient'],
-                'fields' => $data['fields'],
-                'subject' => $data['subject'],
-                'branding' => $data['branding'],
-                'head' => $data['head'],
-                'message_sent_to_recipient' => false,
-                'confirmation_sent_to_sender' => false,
-            ];
-            $formMailModel = new FormMail($formMailModelData);
-            $formMailModel->save();
-            \FormMailHelper::messageToRecipient($formMailModel, $this->premailer);
-            \FormMailHelper::messageToSender($formMailModel, $this->premailer);
-        } catch (\Exception $ex) {
-            // @codeCoverageIgnoreStart
-            DB::rollBack();
-            $return['error'] = [$ex->getMessage()];
-            return Response::json($return);
-            // @codeCoverageIgnoreEnd
-        }
-        DB::commit();
-        // if    we should be queueing this message and confirmation,
-        // then do that here, otherwise email out the messages
-        // below.
-        try {
-            if (config('form_mail.queue')) {
-                \FormMailHelper::queue($formMailModel, $this->premailer);
-            } else {
-                \FormMailHelper::send($formMailModel);
-            }
-            // return the response message as a success
+            $data['premailer'] = $this->premailer;
+            \FormMailHelper::makeMessage($data);
             $return['success'] = [Encoded::getThingThatIsEncoded($data['response'], self::SENDER)];
+
         } catch (\Exception $ex) {
-            $return['error'] = [$ex->getMessage()];
+            $return['error'] = [$ex->getMessage(), $ex->getLine(), $ex->getFile()];
         }
 
         return Response::json($return);

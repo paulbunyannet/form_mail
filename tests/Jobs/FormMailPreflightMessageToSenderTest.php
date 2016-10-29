@@ -11,6 +11,7 @@
  */
 
 namespace Pbc\FormMail\Tests\Jobs;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Mockery;
 use Pbc\FormMail\Jobs\FormMailPreflightMessageToSender;
 
@@ -22,6 +23,7 @@ use Pbc\FormMail\Jobs\FormMailPreflightMessageToSender;
 class FormMailPreflightMessageToSenderTest extends \TestCase
 {
 
+    use DatabaseTransactions;
     /**
      *
      */

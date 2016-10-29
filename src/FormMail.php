@@ -88,4 +88,52 @@ class FormMail extends Model
     {
         return json_decode($this->attributes['message_to_sender'], true);
     }
+
+    /**
+     * return column list
+     *
+     * @return array
+     */
+    public function columns()
+    {
+        return $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
+    }
+
+    public function setHeadAttribute($value)
+    {
+        if(is_array($value)) {
+            $this->attributes['head'] = json_encode($value);
+        } else {
+            $this->attributes['head'] = $value;
+        }
+    }
+
+    public function getHeadAttribute()
+    {
+        $decode = @json_decode($this->attributes['head'], true);
+        if($decode) {
+            return $decode;
+        } else {
+            return $this->attributes['head'];
+        }
+    }
+
+    public function setSubjectAttribute($value)
+    {
+        if(is_array($value)) {
+            $this->attributes['subject'] = json_encode($value);
+        } else {
+            $this->attributes['subject'] = $value;
+        }
+    }
+
+    public function getSubjectAttribute()
+    {
+        $decode = @json_decode($this->attributes['subject'], true);
+        if($decode) {
+            return $decode;
+        } else {
+            return $this->attributes['subject'];
+        }
+    }
 }

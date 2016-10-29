@@ -11,4 +11,6 @@ return [
             'recipient' => 'A new response from the :form was submitted at :time from :domain.'
     ],
     'branding' => ':domain :form Form',
+
+    'greeting' => 'Hi {{ name }},',
 ];

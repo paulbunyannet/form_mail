@@ -12,6 +12,7 @@
 
 namespace Pbc\FormMail\Tests\Helpers;
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Pbc\FormMail\Helpers\FormMailHelper;
 use Pbc\FormMail\Http\Controllers\FormMailController;
 
@@ -21,6 +22,7 @@ use Pbc\FormMail\Http\Controllers\FormMailController;
  */
 class FormMailHelperTest extends \TestCase
 {
+    use DatabaseTransactions;
     /**
      * @var \Faker\Factory
      */
@@ -176,8 +178,7 @@ class FormMailHelperTest extends \TestCase
         $helper = new FormMailHelper();
         $url = $this->faker->url;
         $form = implode('_', $this->faker->words(3));
-        \Config::shouldReceive('get')->once()->with('app.url')->andReturn($url);
-        $recipientName = $helper->makeRecipient($form);
+        $recipientName = $helper->makeRecipient($form, $url);
         $this->isTrue(is_string($recipientName));
         $this->assertSame($recipientName, $form . '@' . str_replace_first('www.', '', parse_url($url, PHP_URL_HOST)));
     }

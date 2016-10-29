@@ -7,7 +7,7 @@ use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Helpers\FormMailHelper;
 use Pbc\FormMail\Http\Controllers\FormMailController;
 
-class SendHelper
+class Send
 {
 
     /**
@@ -30,7 +30,7 @@ class SendHelper
                 ['data' => $formMailModel->message_to_recipient],
                 function ($message) use ($recipientSubject, $recipientTo, $recipientFrom) {
                     $message->to($recipientTo)
-                        ->subject($recipientSubject)
+                        ->subject($recipientSubject[FormMailController::RECIPIENT])
                         ->from($recipientFrom);
                 }
             );
@@ -49,7 +49,7 @@ class SendHelper
                     ['data' => $formMailModel->message_to_sender],
                     function ($message) use ($senderSubject, $senderTo, $senderFrom) {
                         $message->to($senderTo)
-                            ->subject($senderSubject)
+                            ->subject($senderSubject[FormMailController::SENDER])
                             ->from($senderFrom);
                     }
                 );
@@ -57,7 +57,7 @@ class SendHelper
                 $formMailModel->save();
             }
         } catch (\Exception $ex) {
-            throw new \Exception($ex->getMessage());
+            throw $ex;
         }
     }
 

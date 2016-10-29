@@ -1,5 +1,7 @@
-@if( ! empty($data['head']))
-    {{ $data['head']  }}
+@if( ! empty($data['head']) && is_string($data['head']))
+    {!! $data['head']  !!}
+@elseif(! empty($data['head']) && is_array($data['head']) && array_key_exists('recipient', $data['head']))
+    {!! $data['head']['recipient']  !!}
 @endif
 @if( ! empty($data['fields']))
 <table class="table table-striped table-bordered">

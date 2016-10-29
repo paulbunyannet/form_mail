@@ -1,6 +1,7 @@
 <?php
 namespace Pbc\FormMail\Tests\Decorators;
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Pbc\FormMail\Decorators\FormMailPremailDecorator;
 
 /**
@@ -17,6 +18,7 @@ use Pbc\FormMail\Decorators\FormMailPremailDecorator;
 class FormMailPremailDecoratorTest extends \TestCase
 {
 
+    use DatabaseTransactions;
     /**
      * Set up test
      */

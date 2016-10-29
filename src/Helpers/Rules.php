@@ -2,7 +2,7 @@
 
 namespace Pbc\FormMail\Helpers;
 
-class RulesHelper {
+class Rules {
 
     public static function prepRules(array $rules = [])
     {

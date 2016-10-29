@@ -48,7 +48,7 @@ class FormMailSendMessage extends FormMailJob implements ShouldQueue
                 function ($message) {
                     $message->to($this->formMail->recipient)
                         ->from($this->formMail->sender)
-                        ->subject(Encoded::getThingThatIsEncoded($this->formMail->subject, FormMailController::RECIPIENT));
+                        ->subject($this->formMail->message_to_recipient['subject']);
                 });
 
             $this->validateMailSent();

@@ -1,6 +1,7 @@
 <?php
 namespace Pbc\FormMail\Tests;
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Mockery;
 use Pbc\FormMail\FormMail;
 
@@ -16,10 +17,10 @@ use Pbc\FormMail\FormMail;
  */
 class FormMailTest extends \TestCase
 {
+    use DatabaseTransactions;
     public function setup()
     {
         parent::setUp();
-        exec('php artisan migrate:refresh');
         $this->faker = \Faker\Factory::create();
 
     }

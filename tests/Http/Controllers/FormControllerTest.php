@@ -12,6 +12,7 @@
 
 namespace Pbc\FormMail\Tests\Http\Controllers;
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Mockery;
 
@@ -21,7 +22,7 @@ use Mockery;
  */
 class FormControllerTest extends \TestCase
 {
-    use WithoutMiddleware;
+    use WithoutMiddleware, DatabaseTransactions;
 
     /**
      * @var
@@ -634,6 +635,8 @@ class FormControllerTest extends \TestCase
      */
     private function updateConfigForQueueAndConfirmation($queue, $confirmation)
     {
+        $this->config['form_mail.queue'] = config(['form_mail.queue']);
+        $this->config['form_mail.confirmation'] = config(['form_mail.confirmation']);
         config(['form_mail.queue' => $queue]);
         config(['form_mail.confirmation' => $confirmation]);
     }
@@ -643,8 +646,8 @@ class FormControllerTest extends \TestCase
      */
     private function resetOriginalConfiguration()
     {
-        config(['form_mail.queue' => true]);
-        config(['form_mail.confirmation' => false]);
+        config(['form_mail.queue' =>  $this->config['form_mail.queue']]);
+        config(['form_mail.confirmation' => $this->config['form_mail.confirmation']]);
     }
 
     /**

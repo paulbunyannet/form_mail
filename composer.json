@@ -20,7 +20,8 @@
     "require": {
         "paulbunyannet/premailer": "^1.0",
         "paulbunyannet/bandolier": "^1.2",
-        "paulbunyannet/form_mail_template": "1.03.x"
+        "paulbunyannet/form_mail_template": "1.04.x",
+        "mustache/mustache": "^2.11"
     },
     "minimum-stability": "stable"
 }

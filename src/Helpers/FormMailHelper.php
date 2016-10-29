@@ -13,15 +13,11 @@ namespace Pbc\FormMail\Helpers;
 
 use Pbc\Bandolier\Type\Encoded;
 use Pbc\Bandolier\Type\Strings;
+use Pbc\FormMail\Decorators\FormMailDecorator;
 use Pbc\FormMail\Decorators\FormMailPremailDecorator;
 use Pbc\FormMail\FormMail;
-use Pbc\FormMail\Helpers\MessageHelper;
-use Pbc\FormMail\Helpers\QueueHelper;
-use Pbc\FormMail\Helpers\RulesHelper;
-use Pbc\FormMail\Helpers\SendHelper;
-use Pbc\FormMail\Http\Controllers\FormMailController;
-use Pbc\FormMail\Decorators\FormMailDecorator;
 use Pbc\FormMail\Generators\FormMailGenerator;
+use Pbc\FormMail\Http\Controllers\FormMailController;
 use Pbc\Premailer;
 
 /**
@@ -37,7 +33,7 @@ class FormMailHelper
      */
     public function messageToRecipient(FormMail $formMailModel, Premailer $premailer)
     {
-        return MessageHelper::messageToRecipient($formMailModel, $premailer);
+        return Message::messageToRecipient($formMailModel, $premailer);
     }
 
     /**
@@ -47,7 +43,7 @@ class FormMailHelper
      */
     public function messageToSender(FormMail $formMailModel, Premailer $premailer)
     {
-        return MessageHelper::messageToSender($formMailModel, $premailer);
+        return Message::messageToSender($formMailModel, $premailer);
 
     }
 
@@ -56,9 +52,9 @@ class FormMailHelper
      * @param Premailer $premailer
      * @param int $defaultDelay
      */
-    public function queue(FormMail $formMailModel, Premailer $premailer, $defaultDelay=10)
+    public function queue(FormMail $formMailModel, Premailer $premailer, $defaultDelay = 10)
     {
-        return QueueHelper::queue($formMailModel, $premailer, $defaultDelay);
+        return Queue::queue($formMailModel, $premailer, $defaultDelay);
     }
 
     /**
@@ -67,7 +63,7 @@ class FormMailHelper
      */
     public function prepRules(array $rules = [])
     {
-        return RulesHelper::prepRules([]);
+        return Rules::prepRules([]);
     }
 
     /**
@@ -75,7 +71,7 @@ class FormMailHelper
      */
     public function send(FormMail $formMailModel)
     {
-        return SendHelper::send($formMailModel);
+        return Send::send($formMailModel);
     }
 
     /**
@@ -92,6 +88,18 @@ class FormMailHelper
         }
         $data['resource'] = $this->makeResource($class, $function);
         return $this;
+    }
+
+    /**
+     * Make Resource string
+     * @param $class
+     * @param $method
+     * @return string
+     */
+    public function makeResource($class, $method)
+    {
+        $generator = new FormMailGenerator(['class' => $class, 'method' => $method]);
+        return $generator->resource();
     }
 
     /**
@@ -144,15 +152,12 @@ class FormMailHelper
     }
 
     /**
-     * Make Resource string
-     * @param $class
-     * @param $method
      * @return string
      */
-    public function makeResource($class, $method)
+    public static function resourceRoot()
     {
-        $generator = new FormMailGenerator(['class' => $class, 'method' => $method]);
-        return $generator->resource();
+        $decorator = new FormMailDecorator(['resource' => FormMailController::RESOURCE_ROOT]);
+        return $decorator->resourceRoot();
     }
 
     /**
@@ -227,20 +232,14 @@ class FormMailHelper
      */
     public function makeHead($data)
     {
-        $inject = $this->languageInject($data);
-        return json_encode([
-            FormMailController::SENDER => \Lang::get(self::resourceRoot() . '.' . \Route::currentRouteName() . '.' . FormMailController::SENDER,
-                $inject),
-            FormMailController::RECIPIENT => \Lang::get(self::resourceRoot() . '.' . \Route::currentRouteName() . '.' . FormMailController::RECIPIENT,
-                $inject)
-        ]);
+        return Head::makeHead($data);
     }
 
     /**
      * @param array $data
      * @return array
      */
-    private function languageInject(array $data)
+    public function languageInject(array $data)
     {
         $decorator = new FormMailDecorator(array_merge($data, [
             'data' => $data,
@@ -251,15 +250,6 @@ class FormMailHelper
             'formName' => $this->makeFormName()
         ]));
         return $decorator->resourceInject();
-    }
-
-    /**
-     * @return string
-     */
-    public static function resourceRoot()
-    {
-        $decorator = new FormMailDecorator(['resource' => FormMailController::RESOURCE_ROOT]);
-        return $decorator->resourceRoot();
     }
 
     /**
@@ -350,12 +340,13 @@ class FormMailHelper
 
         // if subject lines for both recipient and sender are set then use them, otherwise resort to defaut
         $output = [];
-        foreach([FormMailController::RECIPIENT, FormMailController::SENDER] as $key) {
+        foreach ([FormMailController::RECIPIENT, FormMailController::SENDER] as $key) {
             // check if language key exists for this route to the recipient/sender key
             if (\Lang::get(self::resourceRoot() . '.' . \Route::currentRouteName() . '.subject.' . $key) !== self::resourceRoot() . '.' . \Route::currentRouteName() . '.subject.' . $key) {
                 // get data to be injected into the language line.
                 $inject = $this->languageInject(array_merge($data, ['formName' => $formName]));
-                $output[$key] = \Lang::get(self::resourceRoot() . '.' . \Route::currentRouteName() . '.subject.' . $key, $inject);
+                $output[$key] = \Lang::get(self::resourceRoot() . '.' . \Route::currentRouteName() . '.subject.' . $key,
+                    $inject);
             }
         }
 
@@ -385,8 +376,20 @@ class FormMailHelper
         if (array_key_exists(FormMailController::SENDER, $data)) {
             return $this;
         }
-        $data[FormMailController::SENDER] = $value;
+        $data[FormMailController::SENDER] = $this->makeSender($data, $value);
         return $this;
+    }
+
+    /**
+     * Make sender address
+     *
+     * @param $data
+     * @param string $sender
+     * @return array|null|string
+     */
+    public function makeSender($data, $sender = null, $url = null)
+    {
+        return Sender::makeSender($data, $sender, $url);
     }
 
     /**
@@ -398,22 +401,30 @@ class FormMailHelper
         if (array_key_exists(FormMailController::RECIPIENT, $data)) {
             return $this;
         }
-        $recipient = \Config::get('form_mail.recipient.'.$form);
-        if($recipient) {
+        $recipient = \Config::get('form_mail.recipient.' . $form);
+        if ($recipient) {
             $data[FormMailController::RECIPIENT] = $recipient;
             return $this;
         }
-        $data[FormMailController::RECIPIENT] = $this->makeRecipient($form);
+        $data[FormMailController::RECIPIENT] = Recipient::makeRecipient($form);
         return $this;
     }
 
     /**
      * @param $form
-     * @return string
+     * @return static
      */
-    public function makeRecipient($form)
+    public function makeRecipient($form, $url = null)
     {
-        $formName = $this->makeFormName($form);
-        return $formName . '@' . str_replace_first('www.', '', parse_url(\Config::get('app.url'), PHP_URL_HOST));
+        return Recipient::makeRecipient($form, $url);
+    }
+
+    /**
+     * @param array $data
+     * @return static
+     */
+    public function makeMessage($data = [])
+    {
+        return Message::makeMessage($data);
     }
 }

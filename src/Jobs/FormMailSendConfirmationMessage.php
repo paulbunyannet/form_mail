@@ -58,7 +58,7 @@ class FormMailSendConfirmationMessage extends FormMailJob implements ShouldQueue
             \Mail::send('pbc_form_mail_template::body', ['data' => $this->formMail->message_to_sender], function ($message) {
                 $message->to($this->formMail->sender)
                     ->from($this->formMail->recipient)
-                    ->subject(Encoded::getThingThatIsEncoded($this->formMail->subject, FormMailController::SENDER));
+                    ->subject($this->formMail->message_to_sender['subject']);
             });
 
             $this->validateMailSent();

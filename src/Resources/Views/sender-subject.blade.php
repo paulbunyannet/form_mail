@@ -1,0 +1,1 @@
+A message was sent to {{ $data['recipient'] }} {{ isset($data['name']) && strlen($data['name']) > 0 ? '( '.$data['name'] . ' )' : ''  }} on {{ $data['time'] }}

@@ -2,11 +2,12 @@
 
 namespace Pbc\FormMail\Helpers;
 
+use Illuminate\Contracts\Bus\Dispatcher;
 use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Jobs\FormMailSendMessage;
 use Pbc\FormMail\Jobs\FormMailSendConfirmationMessage;
 
-class QueueHelper {
+class Queue {
 
 
     /**
@@ -17,10 +18,10 @@ class QueueHelper {
     public static function queue(FormMail $formMailModel, \Pbc\Premailer $premailer, $defaultDelay=10)
     {
         $formMailSendMessage =  (new FormMailSendMessage($formMailModel, $premailer))->delay(config('form_mail.delay.send_message', $defaultDelay));
-        app(\Illuminate\Contracts\Bus\Dispatcher::class)->dispatch($formMailSendMessage);
+        app(Dispatcher::class)->dispatch($formMailSendMessage);
         if (config('form_mail.confirmation')) {
             $formMailSendConfirmationMessage = (new FormMailSendConfirmationMessage($formMailModel, $premailer))->delay(config('form_mail.delay.send_confirmation', $defaultDelay));
-            app(\Illuminate\Contracts\Bus\Dispatcher::class)->dispatch($formMailSendConfirmationMessage);
+            app(Dispatcher::class)->dispatch($formMailSendConfirmationMessage);
 
         }
     }

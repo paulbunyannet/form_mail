@@ -89,12 +89,12 @@ class FormMailSendConfirmationTest extends \TestCase
             'sender' => $faker->email,
             'recipient' => $faker->email,
             'fields' => [],
-            'subject' => 'Subject',
+            'subject' => ['sender' => 'subject to sender', 'recipient' => 'subject to recipient'],
             'branding' => '',
             'confirmation_sent_to_sender' => false,
             'message_sent_to_recipient' => false,
-            'message_to_sender' => ['subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
-            'message_to_recipient' => ['subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
+            'message_to_sender' => ['subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'head' => $faker->paragraph(), 'branding' => $faker->sentence],
+            'message_to_recipient' => ['subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'head' => $faker->paragraph(), 'branding' => $faker->sentence],
             'html' => $faker->paragraph(),
             'text' => $faker->paragraph()
         ];
@@ -141,7 +141,7 @@ class FormMailSendConfirmationTest extends \TestCase
             'sender' => $faker->email,
             'recipient' => $faker->sentence(),
             'fields' => [],
-            'subject' => 'Subject',
+            'subject' => ['sender' => 'subject to sender', 'recipient' => 'subject to recipient'],
             'branding' => '',
             'confirmation_sent_to_sender' => false,
             'message_sent_to_recipient' => false,
@@ -202,7 +202,7 @@ class FormMailSendConfirmationTest extends \TestCase
             'sender' => $faker->sentence(),
             'recipient' => $faker->email,
             'fields' => [],
-            'subject' => 'Subject',
+            'subject' => ['sender' => 'subject to sender', 'recipient' => 'subject to recipient'],
             'branding' => '',
             'confirmation_sent_to_sender' => false,
             'message_sent_to_recipient' => false,
@@ -259,16 +259,15 @@ class FormMailSendConfirmationTest extends \TestCase
         $html = [
             'resource' => 'bla_bla_bla',
             'form' => 'some_form',
-            'subject' => $faker->sentence(),
             'sender' => $sender,
             'recipient' => $recipient,
             'fields' => [],
-            'subject' => 'Subject',
+            'subject' => ['recipient' => 'subject to recipient', 'sender' => 'subject to sender'],
             'branding' => '',
             'confirmation_sent_to_sender' => false,
             'message_sent_to_recipient' => false,
-            'message_to_sender' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph(), 'subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
-            'message_to_recipient' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph(), 'subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
+            'message_to_sender' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph(), 'head' => $faker->paragraph(), 'subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
+            'message_to_recipient' => ['html' => $faker->paragraph(), 'text' => $faker->paragraph(), 'head' => $faker->paragraph(), 'subject' => $faker->sentence(), 'body' => $faker->paragraph(), 'branding' => $faker->sentence],
             'html' => $faker->paragraph(),
             'text' => $faker->paragraph()
         ];
@@ -277,11 +276,11 @@ class FormMailSendConfirmationTest extends \TestCase
             $formMailMock->save();
             $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with($key)->andReturn($value);
         }
-        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_recipient')->andReturn($html);
-        $formMailMock->message_to_recipient = $html;
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_recipient')->andReturn($html['message_to_recipient']);
+        $formMailMock->message_to_recipient = $html['message_to_recipient'];
 
-        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_sender')->andReturn($html);
-        $formMailMock->message_to_sender = $html;
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_sender')->andReturn($html['message_to_sender']);
+        $formMailMock->message_to_sender = $html['message_to_sender'];
 
         $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('recipient')->andReturn($recipient);
         $formMailMock->recipient = $recipient;
@@ -289,9 +288,8 @@ class FormMailSendConfirmationTest extends \TestCase
         $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('sender')->andReturn($sender);
         $formMailMock->sender = $sender;
 
-        $subject = $faker->sentence();
-        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('subject')->andReturn($subject);
-        $formMailMock->subject = $subject;
+        $formMailMock->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('subject')->andReturn($html['subject']);
+        $formMailMock->subject = $html['subject'];
 
         // see http://stackoverflow.com/a/31135826 for example
         \Mail::shouldReceive('failures')->zeroOrMoreTimes()->andReturn([]);
@@ -303,6 +301,7 @@ class FormMailSendConfirmationTest extends \TestCase
                 return true;
             }),
             \Mockery::on(function (\Closure $closure) use ($formMailMock) {
+
 
                 $mock = Mockery::mock('Illuminate\Mailer\Message');
                 // mock to method
@@ -318,7 +317,7 @@ class FormMailSendConfirmationTest extends \TestCase
                 // mock subject method
                 $mock->shouldReceive('subject')
                     ->once()
-                    ->with($formMailMock->subject);
+                    ->with($formMailMock->message_to_sender['subject']);
                 $closure($mock);
                 return true;
 

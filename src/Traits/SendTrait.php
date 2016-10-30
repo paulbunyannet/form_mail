@@ -4,6 +4,11 @@ namespace Pbc\FormMail\Traits;
 
 use Pbc\FormMail\FormMail;
 
+/**
+ * Class SendTrait
+ * @package Pbc\FormMail\Traits
+ * @codeCoverageIgnore
+ */
 trait SendTrait
 {
 

@@ -32,11 +32,12 @@ class Message
 
         foreach (array_keys($data) as $key) {
             $value = Encoded::getThingThatIsEncoded($data[$key], FormMailController::RECIPIENT);
+            // @codeCoverageIgnoreStart
             if ($value !== $data[$key]) {
                 $data[$key] = $value;
             }
+            // @codeCoverageIgnoreEnd
         }
-
         // body of email message
         $data['head'] = $data['head'][FormMailController::RECIPIENT];
         $data['subject'] = $data['subject'][FormMailController::RECIPIENT];
@@ -68,9 +69,11 @@ class Message
         // a key for recipient in it.
         foreach (array_keys($data) as $key) {
             $value = Encoded::getThingThatIsEncoded($data[$key], FormMailController::SENDER);
+            // @codeCoverageIgnoreStart
             if ($value !== $data[$key]) {
                 $data[$key] = $value;
             }
+            // @codeCoverageIgnoreEnd
         }
         $data['head'] = $data['head'][FormMailController::SENDER];
         $data['subject'] = $data['subject'][FormMailController::SENDER];
@@ -128,8 +131,10 @@ class Message
             self::messageToRecipient($formMailModel, $data['premailer']);
             self::messageToSender($formMailModel, $data['premailer']);
         } catch (\Exception $ex) {
+            // @codeCoverageIgnoreStart
             \DB::rollBack();
             throw $ex;
+            // @codeCoverageIgnoreEnd
         }
         // if we should be queueing this message and confirmation,
         // then do that here, otherwise email out the messages

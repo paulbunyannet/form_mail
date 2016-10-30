@@ -43,4 +43,16 @@ class FormMailTest extends \TestCase
         $this->assertSame($form->head, $head);
 
     }
+    /**
+     * Check that the subject column can be set
+     * @test
+     * @group model
+     */
+    public function the_subject_value_in_the_database_will_be_set()
+    {
+        $subject = ['sender' => $this->faker->sentence, 'recipient' => $this->faker->sentence];
+        $form = new FormMail(['subject' => $subject]);
+        $this->assertSame($form->subject, $subject);
+
+    }
 }

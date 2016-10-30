@@ -6,6 +6,11 @@ use FormMailHelper;
 use Pbc\FormMail\FormMail;
 use Pbc\Premailer;
 
+/**
+ * Class MessageTrait
+ * @package Pbc\FormMail\Traits
+ * @codeCoverageIgnore
+ */
 trait MessageTrait
 {
 

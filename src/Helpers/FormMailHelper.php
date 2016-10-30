@@ -48,30 +48,12 @@ class FormMailHelper
     }
 
     /**
-     * @param FormMail $formMailModel
-     * @param Premailer $premailer
-     * @param int $defaultDelay
-     */
-    public function queue(FormMail $formMailModel, Premailer $premailer, $defaultDelay = 10)
-    {
-        return Queue::queue($formMailModel, $premailer, $defaultDelay);
-    }
-
-    /**
      * @param array $rules
      * @return array
      */
     public function prepRules(array $rules = [])
     {
         return Rules::prepRules([]);
-    }
-
-    /**
-     * @param FormMail $formMailModel
-     */
-    public function send(FormMail $formMailModel)
-    {
-        return Send::send($formMailModel);
     }
 
     /**

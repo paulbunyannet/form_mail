@@ -24,7 +24,7 @@ class FormMailHelperTest extends \TestCase
 {
     use DatabaseTransactions;
     /**
-     * @var \Faker\Factory
+     * @var \Faker\Factory::create
      */
     protected $faker;
     /**
@@ -134,7 +134,7 @@ class FormMailHelperTest extends \TestCase
         $this->assertSame($route, $data['formName']);
     }
 
-        /**
+    /**
      * Check to see if the formName
      * returns in the correct format
      *
@@ -146,7 +146,7 @@ class FormMailHelperTest extends \TestCase
         $helper = new FormMailHelper();
         $formName = $this->faker->word;
         $subject = $helper->makeSubject(['formName' => $formName]);
-        $this->assertSame($subject, ucfirst($formName).' Form Submission');
+        $this->assertSame($subject, ucfirst($formName) . ' Form Submission');
     }
 
     /**
@@ -276,11 +276,13 @@ class FormMailHelperTest extends \TestCase
     {
         $helper = new FormMailHelper();
         $request = null;
-        $input = [[
-            'value' => 'fo bar bazz',
-            'label' => 'Foo Bar Bazz',
-            'field' => 'field'
-        ]];
+        $input = [
+            [
+                'value' => 'fo bar bazz',
+                'label' => 'Foo Bar Bazz',
+                'field' => 'field'
+            ]
+        ];
         $data = array(
             'fields' => $input
         );
@@ -353,11 +355,78 @@ class FormMailHelperTest extends \TestCase
         $helper = new FormMailHelper();
         $email = $this->faker->email();
         $form = $this->faker->word;
-        config(['form_mail.recipient.'.$form => $email]);
+        config(['form_mail.recipient.' . $form => $email]);
         $data = [];
 
         $helper->recipient($data, $form);
         $this->assertSame($data[FormMailController::RECIPIENT], $email);
     }
-    
+
+    /**
+     * test getting to messageToRecipient method
+     * @test
+     * @group FormMailHelperCoverage
+     */
+    public function testFormMailHelperMessageToRecipient()
+    {
+        $data = [
+            'head' => ['sender' => $this->faker->paragraph, 'recipient' => $this->faker->paragraph],
+            'subject' => ['sender' => $this->faker->sentence, 'recipient' => $this->faker->sentence],
+            'body' => $this->faker->paragraph,
+        ];
+        $formMail = \Pbc\FormMail\FormMail::create($data);
+            $premailerMock = \Mockery::mock('Pbc\Premailer');
+        $premailerMock->shouldReceive('html')->zeroOrMoreTimes()->andReturn([
+            'html' => $data['head']['recipient'],
+            'text' => $data['head']['recipient']
+        ]);
+
+        $formMailHelper = new FormMailHelper();
+
+        $formMailHelper->messageToRecipient($formMail, $premailerMock);
+        $this->assertSame(
+            $formMail->message_to_recipient['subject'],
+            $data['subject']['recipient']
+        );
+        $this->assertSame(
+            $formMail->message_to_recipient['head'],
+            $data['head']['recipient']
+        );
+
+
+    }
+    /**
+     * test getting to messageToSender method
+     * @test
+     * @group FormMailHelperCoverage
+     */
+    public function testFormMailHelperMessageToSender()
+    {
+        $data = [
+            'head' => ['sender' => $this->faker->paragraph, 'recipient' => $this->faker->paragraph],
+            'subject' => ['sender' => $this->faker->sentence, 'recipient' => $this->faker->sentence],
+            'body' => $this->faker->paragraph,
+        ];
+        $formMail = \Pbc\FormMail\FormMail::create($data);
+            $premailerMock = \Mockery::mock('Pbc\Premailer');
+        $premailerMock->shouldReceive('html')->zeroOrMoreTimes()->andReturn([
+            'html' => $data['head']['sender'],
+            'text' => $data['head']['sender']
+        ]);
+
+        $formMailHelper = new FormMailHelper();
+
+        $formMailHelper->messageToSender($formMail, $premailerMock);
+        $this->assertSame(
+            $formMail->message_to_sender['subject'],
+            $data['subject']['sender']
+        );
+        $this->assertSame(
+            $formMail->message_to_sender['head'],
+            $data['head']['sender']
+        );
+
+
+    }
+
 }

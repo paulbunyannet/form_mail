@@ -4,6 +4,11 @@ namespace Pbc\FormMail\Traits;
 
 use Pbc\FormMail\FormMail;
 
+/**
+ * Class QueueTrait
+ * @package Pbc\FormMail\Traits
+ * @codeCoverageIgnore
+ */
 trait QueueTrait {
 
 

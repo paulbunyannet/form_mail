@@ -120,7 +120,7 @@ class FormMailJob extends Job
         } catch (\Exception $ex) {
             $message = ['html' => $body, 'text' => $body];
         }
-
+        $message = array_merge($this->formMail->{$key}, $message);
         $this->preflighted[$key] = $message;
         $this->formMail->{$key} = $message;
         $this->formMail->save();

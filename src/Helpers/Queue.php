@@ -7,7 +7,11 @@ use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Jobs\FormMailSendMessage;
 use Pbc\FormMail\Jobs\FormMailSendConfirmationMessage;
 
-class Queue {
+/**
+ * Class Queue
+ * @package Pbc\FormMail\Helpers
+ */
+class Queue implements HelperContract {
 
 
     /**
@@ -25,4 +29,28 @@ class Queue {
 
         }
     }
+
+    /**
+     * @param array $data
+     * @return mixed
+     */
+    public static function get(array $data = [])
+    {
+        $classKey = strtolower(__CLASS__);
+        if(array_key_exists($classKey, $data)) {
+            return $data[$classKey];
+        }
+
+        return self::getDefault();
+    }
+
+    /**
+     * @return mixed
+     */
+    public static function getDefault()
+    {
+        return \Config::get('form_mail.queue');
+    }
+
+
 }

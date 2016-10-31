@@ -21,7 +21,7 @@ class SenderTest extends \TestCase
      * @test
      * @group Sender
      */
-    public function testSenderUsesAddressSubmitedTomakeSender()
+    public function testSenderUsesAddressSubmittedToMakeSender()
     {
         $sender = 'example@example.com';
         $this->assertSame($sender, Sender::makeSender(['sender' => $sender]));
@@ -30,7 +30,7 @@ class SenderTest extends \TestCase
      * @test
      * @group Sender
      */
-    public function testSenderUsesRequestAddressTomakeSender()
+    public function testSenderUsesRequestAddressToMakeSender()
     {
         $sender = 'example@example.com';
         \Request::replace(['email' => $sender]);
@@ -40,7 +40,7 @@ class SenderTest extends \TestCase
      * @test
      * @group Sender
      */
-    public function testSenderUsesSenderandUrlToCreateAddress()
+    public function testSenderUsesSenderAndUrlToCreateAddress()
     {
         $sender = 'example';
         $url = 'http://www.example.com';
@@ -50,7 +50,7 @@ class SenderTest extends \TestCase
      * @test
      * @group Sender
      */
-    public function testSenderUsesSenderandConfigUrlToCreateAddress()
+    public function testSenderUsesSenderAndConfigUrlToCreateAddress()
     {
         $sender = 'example';
         $url = \Config::get('app.url');

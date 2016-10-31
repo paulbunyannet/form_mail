@@ -3,6 +3,7 @@
 namespace Pbc\FormMail;
 
 use Illuminate\Database\Eloquent\Model;
+use utilphp\util;
 
 /**
  * Class FormMail
@@ -23,6 +24,8 @@ class FormMail extends Model
         'head',
         'message_sent_to_recipient',
         'confirmation_sent_to_sender',
+        'confirmation',
+        'queue',
     ];
     
     /**
@@ -135,5 +138,15 @@ class FormMail extends Model
         } else {
             return $this->attributes['subject'];
         }
+    }
+
+    public function setConfirmationAttribute($data)
+    {
+        $this->attributes['confirmation'] = util::str_to_bool($data);
+    }
+
+    public function setQueueAttribute($data)
+    {
+        $this->attributes['queue'] = util::str_to_bool($data);
     }
 }

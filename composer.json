@@ -21,7 +21,8 @@
         "paulbunyannet/premailer": "^1.0",
         "paulbunyannet/bandolier": "^1.2",
         "paulbunyannet/form_mail_template": "1.04.x",
-        "mustache/mustache": "^2.11"
+        "mustache/mustache": "^2.11",
+        "brandonwamboldt/utilphp": "1.1.*"
     },
     "minimum-stability": "stable"
 }

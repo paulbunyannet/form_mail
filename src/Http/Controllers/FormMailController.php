@@ -8,6 +8,9 @@ use DB;
 use Illuminate\Http\Request;
 use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
+use Pbc\FormMail\Helpers\Confirmation;
+use Pbc\FormMail\Helpers\FormMailHelper;
+use Pbc\FormMail\Helpers\Queue;
 use Pbc\FormMail\Traits\MessageTrait;
 use Pbc\FormMail\Traits\QueueTrait;
 use Pbc\FormMail\Traits\RulesTrait;
@@ -56,7 +59,7 @@ class FormMailController extends Controller
      * FormMailController constructor.
      * @param Premailer $premailer
      */
-    public function __construct(Premailer $premailer, \Pbc\FormMail\Helpers\FormMailHelper $helper)
+    public function __construct(Premailer $premailer, FormMailHelper $helper)
     {
         $this->premailer = $premailer;
         $this->helper = $helper;
@@ -70,8 +73,8 @@ class FormMailController extends Controller
     public function requestHandler(Request $request, $data = [])
     {
         $return = [
-            'queue' => config('form_mail.queue'),
-            'confirmation' => config('form_mail.confirmation'),
+            'queue' => Queue::getDefault(),
+            'confirmation' => Confirmation::getDefault(),
         ];
 
         $validator = Validator::make($request->all(), $this->rules, []);
@@ -106,7 +109,13 @@ class FormMailController extends Controller
             ->head($data)
 
             /** @var string $response response that will be passed as success */
-            ->response($data);
+            ->response($data)
+
+            // setup confirmation boolean
+            ->confirmation($data)
+
+            // setup queue boolean field
+            ->queue($data);
 
 
         // make record in formMail model and put message in job queue

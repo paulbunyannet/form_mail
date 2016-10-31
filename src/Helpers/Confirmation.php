@@ -15,9 +15,9 @@ class Confirmation implements HelperContract
      */
     public static function get(array $data = [])
     {
-        $classKey = strtolower(__CLASS__);
-        if(array_key_exists($classKey, $data)) {
-            return $data[$classKey];
+        $key = strtolower(__CLASS__);
+        if(array_key_exists($key, $data)) {
+            return $data[$key];
         }
 
         return self::getDefault();

@@ -409,4 +409,33 @@ class FormMailHelper
     {
         return Message::makeMessage($data);
     }
+
+    /**
+     * Setup confirmation boolean
+     * @return $this
+     */
+    public function confirmation(&$data)
+    {
+        $key = strtolower(__FUNCTION__);
+        if (array_key_exists($key, $data)) {
+            return $this;
+        }
+        $data[$key] = Confirmation::get($data);
+        return $this;
+    }
+
+    /**
+     * Setup queue boolean field
+     * @param $data
+     * @return $this
+     */
+    public function queue(&$data)
+    {
+        $key = strtolower(__FUNCTION__);
+        if (array_key_exists($key, $data)) {
+            return $this;
+        }
+        $data[$key] = Queue::get($data);
+        return $this;
+    }
 }

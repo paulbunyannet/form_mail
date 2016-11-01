@@ -11,6 +11,9 @@ use utilphp\util;
  */
 class FormMail extends Model
 {
+    /**
+     * @var array
+     */
     protected $fillable = [
         'form',
         'resource',
@@ -102,6 +105,9 @@ class FormMail extends Model
         return $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
     }
 
+    /**
+     * @param $value
+     */
     public function setHeadAttribute($value)
     {
         if(is_array($value)) {
@@ -111,6 +117,9 @@ class FormMail extends Model
         }
     }
 
+    /**
+     * @return mixed
+     */
     public function getHeadAttribute()
     {
         $decode = @json_decode($this->attributes['head'], true);
@@ -121,6 +130,9 @@ class FormMail extends Model
         }
     }
 
+    /**
+     * @param $value
+     */
     public function setSubjectAttribute($value)
     {
         if(is_array($value)) {
@@ -130,6 +142,9 @@ class FormMail extends Model
         }
     }
 
+    /**
+     * @return mixed
+     */
     public function getSubjectAttribute()
     {
         $decode = @json_decode($this->attributes['subject'], true);
@@ -140,11 +155,17 @@ class FormMail extends Model
         }
     }
 
+    /**
+     * @param $data
+     */
     public function setConfirmationAttribute($data)
     {
         $this->attributes['confirmation'] = util::str_to_bool($data);
     }
 
+    /**
+     * @param $data
+     */
     public function setQueueAttribute($data)
     {
         $this->attributes['queue'] = util::str_to_bool($data);

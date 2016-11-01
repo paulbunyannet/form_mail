@@ -36,7 +36,7 @@ class FormMailSendConfirmationMessage extends FormMailJob implements ShouldQueue
     public function __construct(FormMail $formMail, Premailer $premailer)
     {
         parent::__construct($formMail, $premailer);
-        $this->doConfirmation = \Config::get('form_mail.confirmation');
+        $this->doConfirmation = $formMail->confirmation;
     }
 
     /**

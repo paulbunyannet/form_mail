@@ -37,7 +37,7 @@ class Send
             $formMailModel->message_sent_to_recipient = true;
             $formMailModel->save();
 
-            if (\Config::get('form_mail.confirmation')) {
+            if ($formMailModel->confirmation) {
                 // try and send out message to sender for conformation.
                 // If it fails then return the exception as the
                 // response.

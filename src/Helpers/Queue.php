@@ -23,7 +23,7 @@ class Queue implements HelperContract {
     {
         $formMailSendMessage =  (new FormMailSendMessage($formMailModel, $premailer))->delay(config('form_mail.delay.send_message', $defaultDelay));
         app(Dispatcher::class)->dispatch($formMailSendMessage);
-        if (config('form_mail.confirmation')) {
+        if ($formMailModel->confirmation) {
             $formMailSendConfirmationMessage = (new FormMailSendConfirmationMessage($formMailModel, $premailer))->delay(config('form_mail.delay.send_confirmation', $defaultDelay));
             app(Dispatcher::class)->dispatch($formMailSendConfirmationMessage);
 

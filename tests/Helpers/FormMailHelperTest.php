@@ -374,8 +374,10 @@ class FormMailHelperTest extends \TestCase
             'subject' => ['sender' => $this->faker->sentence, 'recipient' => $this->faker->sentence],
             'body' => $this->faker->paragraph,
         ];
-        $formMail = \Pbc\FormMail\FormMail::create($data);
-            $premailerMock = \Mockery::mock('Pbc\Premailer');
+        $formMailCreate = \Pbc\FormMail\FormMail::create($data);
+        $formMail = \Pbc\FormMail\FormMail::find($formMailCreate->id);
+
+        $premailerMock = \Mockery::mock('Pbc\Premailer');
         $premailerMock->shouldReceive('html')->zeroOrMoreTimes()->andReturn([
             'html' => $data['head']['recipient'],
             'text' => $data['head']['recipient']
@@ -407,8 +409,10 @@ class FormMailHelperTest extends \TestCase
             'subject' => ['sender' => $this->faker->sentence, 'recipient' => $this->faker->sentence],
             'body' => $this->faker->paragraph,
         ];
-        $formMail = \Pbc\FormMail\FormMail::create($data);
-            $premailerMock = \Mockery::mock('Pbc\Premailer');
+        $formMailCreate = \Pbc\FormMail\FormMail::create($data);
+        $formMail = \Pbc\FormMail\FormMail::find($formMailCreate->id);
+
+        $premailerMock = \Mockery::mock('Pbc\Premailer');
         $premailerMock->shouldReceive('html')->zeroOrMoreTimes()->andReturn([
             'html' => $data['head']['sender'],
             'text' => $data['head']['sender']

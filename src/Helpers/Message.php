@@ -45,11 +45,14 @@ class Message
             ->with('data', $data)
             ->render();
 
-        if (config('form_mail.queue')) {
+        if ($formMailModel->queue) {
             $formMailModel->message_to_recipient = $data;
             $formMailModel->save();
         } else {
-            $formMailModel->message_to_recipient = \FormMailHelper::premailer($premailer, $data);
+            $formMailModel->message_to_recipient = array_merge(
+                $data,
+                \FormMailHelper::premailer($premailer, $data)
+            );
             $formMailModel->save();
         }
     }
@@ -80,11 +83,14 @@ class Message
         $data['body'] = View::make(\FormMailHelper::resourceRoot())
             ->with('data', $data)
             ->render();
-        if (config('form_mail.queue')) {
+        if ($formMailModel->queue) {
             $formMailModel->message_to_sender = $data;
             $formMailModel->save();
         } else {
-            $formMailModel->message_to_sender = \FormMailHelper::premailer($premailer, $data);
+            $formMailModel->message_to_sender = array_merge(
+                $data,
+                \FormMailHelper::premailer($premailer, $data)
+            );
             $formMailModel->save();
         }
     }
@@ -117,13 +123,16 @@ class Message
                 'confirmation_sent_to_sender' => false,
                 'premailer' => new Premailer(),
                 'time' => Carbon::now(),
-                'greeting' => Greeting::defaultGreeting()
+                'greeting' => Greeting::defaultGreeting(),
+                'confirmation' => Confirmation::getDefault(),
+                'queue' => Queue::getDefault()
             ];
             $data = Arrays::defaultAttributes($defaults, $data);
 
             $data['greeting'] = Greeting::makeGreeting($data);
             $data['head'] = Head::makeHead($data);
             $data['subject'] = Subject::makeSubject($data);
+
             $formMailModelClass = \App::make(FormMail::class);
             $formMailModel = $formMailModelClass::create(
                 Arrays::defaultAttributes(array_flip($formMailModelClass->columns()), $data)
@@ -140,7 +149,7 @@ class Message
         // then do that here, otherwise email out the messages
         // below.
         try {
-            if (config('form_mail.queue')) {
+            if ($formMailModel->queue) {
                 Queue::queue($formMailModel, $data['premailer']);
             } else {
                 Send::send($formMailModel);

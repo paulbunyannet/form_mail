@@ -12,6 +12,6 @@ class FormMailHelper extends Facade {
      */
     protected static function getFacadeAccessor()
     {
-        return 'formMailHelper';
+        return 'FormMailHelper';
     }
 }

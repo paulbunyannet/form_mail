@@ -63,7 +63,7 @@ class FormMailController extends Controller
     {
         $this->premailer = $premailer;
         $this->helper = $helper;
-        $this->rules = \FormMailHelper::prepRules();
+        $this->rules = $this->helper->prepRules();
     }
 
     /**

@@ -438,4 +438,15 @@ class FormMailHelper
         $data[$key] = Queue::get($data);
         return $this;
     }
+
+    /**
+     * Get custom request body that will be tacked onto return message
+     * @param $data
+     * @return $this
+     */
+    public function customRequestBody(&$data)
+    {
+        $data['custom_request_body'] = \Request::instance()->query('customRequestBody');
+        return $this;
+    }
 }

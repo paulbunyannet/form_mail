@@ -115,8 +115,10 @@ class FormMailController extends Controller
             ->confirmation($data)
 
             // setup queue boolean field
-            ->queue($data);
+            ->queue($data)
 
+            // custom request data passed from elsewhere that will be padded into body
+            ->customRequestBody($data);
 
         // make record in formMail model and put message in job queue
         try {
@@ -131,5 +133,4 @@ class FormMailController extends Controller
         return Response::json($return);
 
     }
-
 }

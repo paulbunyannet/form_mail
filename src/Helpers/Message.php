@@ -125,7 +125,8 @@ class Message
                 'time' => Carbon::now(),
                 'greeting' => Greeting::defaultGreeting(),
                 'confirmation' => Confirmation::getDefault(),
-                'queue' => Queue::getDefault()
+                'queue' => Queue::getDefault(),
+                'custom_request_body' => null,
             ];
             $data = Arrays::defaultAttributes($defaults, $data);
 

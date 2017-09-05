@@ -31,4 +31,7 @@
             @endforeach
     </tbody>
 </table>
+    @if( isset($data['custom_request_body']) && is_string($data['custom_request_body']))
+        {{ $data['custom_request_body']  }}
+    @endif
 @endif

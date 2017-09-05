@@ -27,7 +27,7 @@ class Head {
 
             if ($output[$key] === $langPath && \View::exists($viewPath)) {
                 $output[$key] = \View::make($viewPath)
-                    ->with('data', $data)
+                    ->with('data', $data + $inject)
                     ->render();
             }
         }

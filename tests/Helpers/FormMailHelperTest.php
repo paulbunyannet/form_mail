@@ -53,13 +53,13 @@ class FormMailHelperTest extends \TestCase
     /**
      * This method is called when a test method did not execute successfully.
      *
-     * @param Exception $e
+     * @param \Exception $e
      *
      * @since Method available since Release 3.4.0
      *
-     * @throws Exception
+     * @throws \Exception
      */
-    protected function onNotSuccessfulTest($e)
+    protected function onNotSuccessfulTest(\Exception $e)
     {
         throw $e;
     }

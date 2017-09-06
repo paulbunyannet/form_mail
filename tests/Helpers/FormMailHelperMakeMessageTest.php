@@ -53,13 +53,13 @@ class FormMailHelperMakeMessageTest extends \TestCase
     /**
      * This method is called when a test method did not execute successfully.
      *
-     * @param Exception $e
+     * @param \Exception $e
      *
      * @since Method available since Release 3.4.0
      *
-     * @throws Exception
+     * @throws \Exception
      */
-    protected function onNotSuccessfulTest($e)
+    protected function onNotSuccessfulTest(\Exception $e)
     {
         throw $e;
     }
@@ -228,6 +228,35 @@ class FormMailHelperMakeMessageTest extends \TestCase
             'subject' => $this->faker->sentence,
             'recipient' => $this->faker->email,
             'name' => $this->faker->name,
+            'sender' => $this->faker->email,
+            'branding' => $this->faker->sentence
+        ];
+        $message = \FormMailHelper::makeMessage($data);
+        $this->assertContains($data['recipient'], $message->message_to_sender['subject']);
+        $this->assertContains($data['name'], $message->message_to_sender['subject']);
+        $this->assertSame($data['recipient'], $message->message_to_sender['recipient']);
+        $this->assertSame($data['sender'], $message->message_to_sender['sender']);
+        $this->assertSame($data['branding'], $message->message_to_sender['branding']);
+        $this->assertContains($data['body'], $message->message_to_sender['head']);
+        $this->resetOriginalConfigForQueueAndConfirmation();
+    }
+
+    /**
+     * Test that when making a message with the sender
+     * name with a special characters in it and it's
+     * queued that you see the correct return
+     * @test
+     * @group MakeMessage
+     */
+    public function testMakeMessageSetsMessageToSenderWhenQueuedWhereNameHasSpecialCharactersInIt()
+    {
+        $this->updateConfigForQueueAndConfirmation(true, true);
+        $data = [
+            'resource' => __METHOD__,
+            'body' => $this->faker->paragraph,
+            'subject' => $this->faker->sentence,
+            'recipient' => $this->faker->email,
+            'name' => 'Jacey O\'Keefe',
             'sender' => $this->faker->email,
             'branding' => $this->faker->sentence
         ];

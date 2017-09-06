@@ -126,7 +126,7 @@ class Message
                 'greeting' => Greeting::defaultGreeting(),
                 'confirmation' => Confirmation::getDefault(),
                 'queue' => Queue::getDefault(),
-                'custom_request_body' => null,
+                'custom_request_body' => CustomRequestBody::getDefault(),
             ];
             $data = Arrays::defaultAttributes($defaults, $data);
 

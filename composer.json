@@ -22,7 +22,8 @@
         "paulbunyannet/bandolier": "^1.6",
         "paulbunyannet/form_mail_template": "1.04.x",
         "mustache/mustache": "^2.11",
-        "brandonwamboldt/utilphp": "1.1.*"
+        "brandonwamboldt/utilphp": "1.1.*",
+        "laravel/helpers": "^1.1"
     },
     "minimum-stability": "stable"
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Pbc\FormMail\Tests\Jobs;
+namespace Tests\Jobs;
 
 /**
  * FormMailSendMessageTest
@@ -8,7 +8,7 @@ namespace Pbc\FormMail\Tests\Jobs;
  * Tests for the FormMailSendMessage job class
  *
  * @author Nate Nolting <naten@paulbunyan.net>
- * @package Pbc\FormMail\Tests\Jobs
+ * @package Tests\Jobs
  */
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -17,23 +17,12 @@ use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Helpers\Confirmation;
 use Pbc\FormMail\Helpers\Queue;
 use Pbc\FormMail\Jobs\FormMailSendConfirmationMessage;
+use Tests\TestCase;
 
-class FormMailSendConfirmationTest extends \TestCase
+class FormMailSendConfirmationTest extends TestCase
 {
 
     use DatabaseTransactions;
-
-    public function setup()
-    {
-        parent::setUp();
-
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-        Mockery::close();
-    }
 
     /**
      * Job does nothing if confirmation_sent_to_sender is set to true
@@ -55,7 +44,7 @@ class FormMailSendConfirmationTest extends \TestCase
 
     /**
      * Job does nothing if confirmation is not set to true
-     * 
+     *
      * @test
      */
     public function the_handle_does_nothing_if_confirmation_is_set_to_false()
@@ -69,17 +58,18 @@ class FormMailSendConfirmationTest extends \TestCase
         $job = new FormMailSendConfirmationMessage($formMail, $premailerMock);
         $this->assertNull($job->handle());
     }
-    
+
     /**
      * Test that handle will throw an exception if the html and
      * text keys are missing in message_to_sender
      *
      * @test
-     * @expectedException \Exception
-     * @expectedExceptionMessage Missing html and/or text keys in message_to_sender
      */
     public function the_handle_throws_an_exception_if_html_and_text_keys_are_missing()
     {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Missing html and/or text keys in message_to_sender');
+
         $formMail = new FormMail();
 
         $faker = \Faker\Factory::create();
@@ -113,12 +103,13 @@ class FormMailSendConfirmationTest extends \TestCase
      * Check that handle will throw an exception if the
      * recipient is an invalid email address
      *
-     * @expectedException \Exception
-     * @expectedExceptionMessage Invalid recipient address
      * @test
      */
     public function the_handle_will_throw_an_exception_if_recipient_is_not_an_email_address()
     {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Invalid recipient address');
+
         $faker = \Faker\Factory::create();
         $formMail = new FormMail();
 
@@ -154,13 +145,14 @@ class FormMailSendConfirmationTest extends \TestCase
      * Check that handle will throw an exception if the
      * recipient is an invalid email address
      *
-     * @expectedException \Exception
-     * @expectedExceptionMessage Invalid sender address
      * @test
      * @group isolation
      */
     public function the_handle_will_throw_an_exception_if_sender_is_not_an_email_address()
     {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Invalid sender address');
+
         $faker = \Faker\Factory::create();
         $formMail = new FormMail();
 
@@ -263,5 +255,5 @@ class FormMailSendConfirmationTest extends \TestCase
         $job = new FormMailSendConfirmationMessage($formMail, $premailerMock);
         $this->assertNull($job->handle());
     }
-    
+
 }

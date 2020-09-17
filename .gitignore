@@ -1,2 +1,9 @@
 vendor
 composer.lock
+.env
+storage/views
+tests/_support/_generated
+storage/framework/cache
+storage/logs
+bootstrap/cache
+docker-compose.yml

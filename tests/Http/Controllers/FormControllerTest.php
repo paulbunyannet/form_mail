@@ -6,69 +6,24 @@
  * Test for Form controller
  *
  * @author Nate Nolting <naten@paulbunyan.net>
- * @package Pbc\FormMail\Tests\Http\Controllers
+ * @package Tests\Http\Controllers
  * @subpackage Subpackage
  */
 
-namespace Pbc\FormMail\Tests\Http\Controllers;
+namespace Tests\Http\Controllers;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Mockery;
+use Tests\TestCase;
 
 /**
  * Class FormControllerTest
- * @package Pbc\FormMail\Tests\Http\Controllers
+ * @package Tests\Http\Controllers
  */
-class FormControllerTest extends \TestCase
+class FormControllerTest extends TestCase
 {
     use WithoutMiddleware, DatabaseTransactions;
-
-    /**
-     * @var
-     */
-    protected $faker;
-    /**
-     * @var
-     */
-    protected $configFile;
-
-    /**
-     * Set up test
-     */
-    public function setUp()
-    {
-        parent::setUp();
-        exec('php artisan migrate:refresh');
-        $this->faker = \Faker\Factory::create();
-        $this->configFile = config_path('form_mail.php');
-
-
-
-    }
-
-    /**
-     * Tear down test
-     */
-    public function tearDown()
-    {
-        parent::tearDown();
-        \Mockery::close();
-    }
-
-    /**
-     * This method is called when a test method did not execute successfully.
-     *
-     * @param \Exception $e
-     *
-     * @since Method available since Release 3.4.0
-     *
-     * @throws \Exception
-     */
-    protected function onNotSuccessfulTest(\Exception $e)
-    {
-        throw $e;
-    }
 
     /**
      * The form handler will use a branding string for header of message
@@ -156,14 +111,10 @@ class FormControllerTest extends \TestCase
         $premailerMock->shouldReceive('html')->once()->andReturn(['subject' => 'this is a custom subject', 'html' => 'this is the body html for test to pass', 'text' => 'this is the body html for test to pass']);
 
         $job = new \Pbc\FormMail\Jobs\FormMailSendMessage($formMail, $premailerMock);
-        app('\Illuminate\Contracts\Bus\Dispatcher')->dispatch($job);
+        dispatch($job);
         $job->handle();
 
         $this->assertSame(1, $formMail->message_sent_to_recipient);
-
-        // reset
-        $this->unsetBinding('\Illuminate\Contracts\Bus\Dispatcher');
-        $this->resetOriginalConfiguration();
     }
 
     /**
@@ -192,14 +143,10 @@ class FormControllerTest extends \TestCase
 
 
         $job = new \Pbc\FormMail\Jobs\FormMailSendConfirmationMessage($formMail, $premailerMock);
-        app('\Illuminate\Contracts\Bus\Dispatcher')->dispatch($job);
+        dispatch($job);
         $job->handle();
 
         $this->assertSame(1, $formMail->confirmation_sent_to_sender);
-
-        // reset
-        $this->unsetBinding('\Illuminate\Contracts\Bus\Dispatcher');
-        $this->resetOriginalConfiguration();
     }
 
     /**
@@ -219,9 +166,6 @@ class FormControllerTest extends \TestCase
 
         $confirmer = \DB::table('jobs')->where('payload', 'like', '%FormMailSendConfirmationMessage%');
         $this->assertSame($confirmer->count(), 0);
-
-        $this->resetOriginalConfiguration();
-
     }
 
 
@@ -243,9 +187,6 @@ class FormControllerTest extends \TestCase
 
         $confirmer = \DB::table('jobs')->where('payload', 'like', '%FormMailSendConfirmationMessage%');
         $this->assertSame($confirmer->count(), 1);
-
-        $this->resetOriginalConfiguration();
-
     }
 
     /**
@@ -263,9 +204,7 @@ class FormControllerTest extends \TestCase
 
         $parameters = $this->fields();
         $this->call('POST', 'form-mail/send', $parameters);
-        $this->assertResponseOk();
 
-        $this->resetOriginalConfiguration();
 
         $sender = \DB::table('jobs')->where('payload', 'like', '%FormMailSendMessage%');
         $this->assertSame($sender->count(), 0);
@@ -281,8 +220,6 @@ class FormControllerTest extends \TestCase
             ]
         );
         $this->assertSame($sent->count(), 1);
-
-
     }
 
     /**
@@ -300,8 +237,6 @@ class FormControllerTest extends \TestCase
         $parameters = $this->fields();
         $this->call('POST', 'form-mail/send', $parameters);
 
-        $this->resetOriginalConfiguration();
-
         $sender = \DB::table('jobs')->where('payload', 'like', '%FormMailSendMessage%');
         $this->assertSame($sender->count(), 0);
 
@@ -316,8 +251,6 @@ class FormControllerTest extends \TestCase
             ]
         );
         $this->assertSame($sent->count(), 1);
-
-
     }
 
     /**
@@ -330,17 +263,17 @@ class FormControllerTest extends \TestCase
         $parameters = $this->fields();
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
-        $this->assertResponseOk();
+
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('success', $decode);
-        $this->assertContains(
+        $this->assertStringContainsString(
             'Thanks for filling out the Form Mail.Send form,  we will get back to you as soon as possible!',
             $decode->success[0]
         );
-        $this->assertContains($parameters['email'], $decode->success[0]);
-        $this->assertContains(htmlspecialchars($parameters['name'], ENT_QUOTES), $decode->success[0]);
-        $this->assertContains($parameters['field1'], $decode->success[0]);
-        $this->assertContains($parameters['field2'], $decode->success[0]);
+        $this->assertStringContainsString($parameters['email'], $decode->success[0]);
+        $this->assertStringContainsString(htmlspecialchars($parameters['name'], ENT_QUOTES), $decode->success[0]);
+        $this->assertStringContainsString($parameters['field1'], $decode->success[0]);
+        $this->assertStringContainsString($parameters['field2'], $decode->success[0]);
     }
 
     /**
@@ -359,11 +292,9 @@ class FormControllerTest extends \TestCase
         \Mail::shouldReceive('send')->once()->withAnyArgs()->andThrowExceptions([new \Exception()]);
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
-        $this->assertResponseOk();
+
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('error', $decode);
-
-        $this->resetOriginalConfiguration();
     }
 
 
@@ -383,11 +314,9 @@ class FormControllerTest extends \TestCase
         \Mail::shouldReceive('send')->once()->ordered()->withAnyArgs()->andThrowExceptions([new \Exception()]);
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
-        $this->assertResponseOk();
+
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('error', $decode);
-
-        $this->resetOriginalConfiguration();
     }
 
 
@@ -407,7 +336,7 @@ class FormControllerTest extends \TestCase
         ];
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
-        $this->assertResponseOk();
+
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('error', $decode);
         $this->assertSame(['The name field is required.'], $decode->error);
@@ -429,7 +358,7 @@ class FormControllerTest extends \TestCase
         ];
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
-        $this->assertResponseOk();
+
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('error', $decode);
         $this->assertSame(['The fields field is required.'], $decode->error);
@@ -453,7 +382,7 @@ class FormControllerTest extends \TestCase
         ];
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
-        $this->assertResponseOk();
+
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('error', $decode);
         $this->assertSame(['The fields must be an array.'], $decode->error);
@@ -475,7 +404,7 @@ class FormControllerTest extends \TestCase
         ];
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
-        $this->assertResponseOk();
+
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('error', $decode);
         $this->assertSame(['The email field is required.'], $decode->error);
@@ -498,7 +427,7 @@ class FormControllerTest extends \TestCase
         ];
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
-        $this->assertResponseOk();
+
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('error', $decode);
         $this->assertSame(['The email must be a valid email address.'], $decode->error);
@@ -520,7 +449,7 @@ class FormControllerTest extends \TestCase
 
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
-        $this->assertResponseOk();
+
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('error', $decode);
         $this->assertSame(['The ' . str_replace('_', ' ', $rule) . ' field is required.'], $decode->error);
@@ -546,7 +475,7 @@ class FormControllerTest extends \TestCase
         ];
         $response = $this->call('POST', 'form-mail/send', $parameters);
         $this->assertJson($response->getContent());
-        $this->assertResponseOk();
+
         $decode = json_decode($response->getContent());
         $this->assertObjectHasAttribute('success', $decode);
 
@@ -620,10 +549,10 @@ class FormControllerTest extends \TestCase
         $this->assertArrayHasKey('html', $message);
         $this->assertArrayHasKey('text', $message);
 
-        $this->assertContains($data['subject'], $message['html']);
-        $this->assertContains($data['branding'], $message['html']);
-        $this->assertContains($data['body'], $message['html']);
-        $this->assertContains($data['footer'], $message['html']);
+        $this->assertStringContainsString($data['subject'], $message['html']);
+        $this->assertStringContainsString($data['branding'], $message['html']);
+        $this->assertStringContainsString($data['body'], $message['html']);
+        $this->assertStringContainsString($data['footer'], $message['html']);
     }
 
 
@@ -635,19 +564,8 @@ class FormControllerTest extends \TestCase
      */
     private function updateConfigForQueueAndConfirmation($queue, $confirmation)
     {
-        $this->config['form_mail.queue'] = config(['form_mail.queue']);
-        $this->config['form_mail.confirmation'] = config(['form_mail.confirmation']);
         config(['form_mail.queue' => $queue]);
         config(['form_mail.confirmation' => $confirmation]);
-    }
-
-    /**
-     * Reset configuration back to original
-     */
-    private function resetOriginalConfiguration()
-    {
-        config(['form_mail.queue' =>  $this->config['form_mail.queue']]);
-        config(['form_mail.confirmation' => $this->config['form_mail.confirmation']]);
     }
 
     /**
@@ -658,20 +576,12 @@ class FormControllerTest extends \TestCase
     private function fields()
     {
         return [
-            'email' => $this->faker->email,
+            'email' => $this->faker->safeEmail,
             'name' => $this->faker->name,
             'field1' => $this->faker->paragraph,
             'field2' => $this->faker->paragraph,
-            'fields' => ['field1', 'field2', 'email', 'name']
+            'fields' => ['field1', 'field2', 'email', 'name'],
         ];
 
-    }
-
-    private function unsetBinding($string)
-    {
-        $bindings = $this->app->getBindings();
-        if (in_array($string, $bindings)) {
-            unset($this->app->bindings[$string]);
-        }
     }
 }

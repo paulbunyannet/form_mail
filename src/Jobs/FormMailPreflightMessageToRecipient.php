@@ -2,16 +2,15 @@
 
 namespace Pbc\FormMail\Jobs;
 
-use App\Jobs\Job;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Pbc\FormMail\FormMail;
 use Pbc\Premailer as Preflight;
 
-class FormMailPreflightMessageToRecipient extends Job implements ShouldQueue
+class FormMailPreflightMessageToRecipient
 {
-    use InteractsWithQueue, SerializesModels;
+    use InteractsWithQueue, SerializesModels, Queueable;
     public $formMail;
     public $preflight;
 

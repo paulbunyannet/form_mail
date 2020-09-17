@@ -12,13 +12,13 @@
 namespace Pbc\FormMail\Jobs;
 
 
-use App\Jobs\Job;
+use Illuminate\Bus\Queueable;
 use Pbc\FormMail\FormMail;
-use Pbc\FormMail\Helpers\FormMailHelper;
 use Pbc\Premailer;
 
-class FormMailJob extends Job
+class FormMailJob
 {
+    use Queueable;
 
     public $formMail;
     /**

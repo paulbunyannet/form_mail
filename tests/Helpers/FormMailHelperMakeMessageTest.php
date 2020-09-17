@@ -6,62 +6,45 @@
  * Test for FormMailHelper::MakeMessageTest
  *
  * @author Nate Nolting <naten@paulbunyan.net>
- * @package Pbc\FormMail\Tests\Http\Controllers
+ * @package Tests\Http\Controllers
  * @subpackage Subpackage
  */
 
-namespace Pbc\FormMail\Tests\Helpers;
+namespace Tests\Helpers;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Helpers\FormMailHelper;
+use Tests\TestCase;
 
 /**
  * Class FormMailHelperTest
- * @package Pbc\FormMail\Tests\Http\Controllers
+ * @package Tests\Http\Controllers
  */
-class FormMailHelperMakeMessageTest extends \TestCase
+class FormMailHelperMakeMessageTest extends TestCase
 {
     use DatabaseTransactions;
-    /**
-     * @var \Faker\Factory
-     */
-    protected $faker;
     /**
      * @var
      */
     protected $configFile;
+    protected $data = [];
 
-    /**
-     * Set up test
-     */
-    public function setUp()
+    protected function setUp(): void
     {
-        $this->faker = \Faker\Factory::create();
         parent::setUp();
-    }
 
-    /**
-     * Tear down test
-     */
-    public function tearDown()
-    {
-        parent::tearDown();
-        \Mockery::close();
-    }
-
-    /**
-     * This method is called when a test method did not execute successfully.
-     *
-     * @param \Exception $e
-     *
-     * @since Method available since Release 3.4.0
-     *
-     * @throws \Exception
-     */
-    protected function onNotSuccessfulTest(\Exception $e)
-    {
-        throw $e;
+        $this->data = [
+            'name' => $this->faker->name,
+            'head' => $this->faker->paragraph,
+            'subject' => $this->faker->sentence,
+            'body' => $this->faker->sentence,
+            'recipient' => $this->faker->email,
+            'sender' => $this->faker->email,
+            'branding' => $this->faker->sentence,
+            'form' => __FUNCTION__,
+            'resource' => __METHOD__,
+        ];
     }
 
     /**
@@ -70,9 +53,8 @@ class FormMailHelperMakeMessageTest extends \TestCase
      */
     public function testMakeMessageSetSubject()
     {
-        $data = ['subject' => $this->faker->sentence];
-        $message = \FormMailHelper::makeMessage($data);
-        $this->assertContains($data['subject'], $message->subject['recipient']);
+        $message = \FormMailHelper::makeMessage($this->data);
+        $this->assertStringContainsString($this->data['subject'], $message->subject['recipient']);
     }
 
     /**
@@ -81,9 +63,8 @@ class FormMailHelperMakeMessageTest extends \TestCase
      */
     public function testMakeMessageSetHead()
     {
-        $data = ['body' => $this->faker->sentence];
-        $message = \FormMailHelper::makeMessage($data);
-        $this->assertContains($data['body'], $message->head['recipient']);
+        $message = \FormMailHelper::makeMessage($this->data);
+        $this->assertStringContainsString($this->data['body'], $message->head['recipient']);
     }
 
     /**
@@ -92,9 +73,8 @@ class FormMailHelperMakeMessageTest extends \TestCase
      */
     public function testMakeMessageSetRecipient()
     {
-        $data = ['recipient' => $this->faker->email];
-        $message = \FormMailHelper::makeMessage($data);
-        $this->assertSame($data['recipient'], $message->recipient);
+        $message = \FormMailHelper::makeMessage($this->data);
+        $this->assertSame($this->data['recipient'], $message->recipient);
     }
 
     /**
@@ -103,9 +83,8 @@ class FormMailHelperMakeMessageTest extends \TestCase
      */
     public function testMakeMessageSetSender()
     {
-        $data = ['sender' => $this->faker->email];
-        $message = \FormMailHelper::makeMessage($data);
-        $this->assertSame($data['sender'], $message->sender);
+        $message = \FormMailHelper::makeMessage($this->data);
+        $this->assertSame($this->data['sender'], $message->sender);
     }
 
     /**
@@ -114,9 +93,8 @@ class FormMailHelperMakeMessageTest extends \TestCase
      */
     public function testMakeMessageSetBranding()
     {
-        $data = ['branding' => $this->faker->sentence];
-        $message = \FormMailHelper::makeMessage($data);
-        $this->assertSame($data['branding'], $message->branding);
+        $message = \FormMailHelper::makeMessage($this->data);
+        $this->assertSame($this->data['branding'], $message->branding);
     }
 
 
@@ -126,9 +104,8 @@ class FormMailHelperMakeMessageTest extends \TestCase
      */
     public function testMakeMessageSetForm()
     {
-        $data = ['form' => __FUNCTION__];
-        $message = \FormMailHelper::makeMessage($data);
-        $this->assertSame($data['form'], $message->form);
+        $message = \FormMailHelper::makeMessage($this->data);
+        $this->assertSame($this->data['form'], $message->form);
     }
 
 
@@ -138,9 +115,8 @@ class FormMailHelperMakeMessageTest extends \TestCase
      */
     public function testMakeMessageSetResource()
     {
-        $data = ['resource' => __METHOD__];
-        $message = \FormMailHelper::makeMessage($data);
-        $this->assertSame($data['resource'], $message->resource);
+        $message = \FormMailHelper::makeMessage($this->data);
+        $this->assertSame($this->data['resource'], $message->resource);
     }
 
     /**
@@ -150,20 +126,12 @@ class FormMailHelperMakeMessageTest extends \TestCase
     public function testMakeMessageSetsMessageToRecipientWhenQueued()
     {
         $this->updateConfigForQueueAndConfirmation(true, true);
-        $data = [
-            'resource' => __METHOD__,
-            'body' => $this->faker->paragraph,
-            'subject' => $this->faker->sentence,
-            'recipient' => $this->faker->email,
-            'sender' => $this->faker->email,
-            'branding' => $this->faker->sentence
-        ];
-        $message = \FormMailHelper::makeMessage($data);
-        $this->assertContains($data['subject'], $message->message_to_recipient['subject']);
-        $this->assertSame($data['recipient'], $message->message_to_recipient['recipient']);
-        $this->assertSame($data['sender'], $message->message_to_recipient['sender']);
-        $this->assertSame($data['branding'], $message->message_to_recipient['branding']);
-        $this->assertContains($data['body'], $message->message_to_recipient['head']);
+        $message = \FormMailHelper::makeMessage($this->data);
+        $this->assertStringContainsString($this->data['subject'], $message->message_to_recipient['subject']);
+        $this->assertSame($this->data['recipient'], $message->message_to_recipient['recipient']);
+        $this->assertSame($this->data['sender'], $message->message_to_recipient['sender']);
+        $this->assertSame($this->data['branding'], $message->message_to_recipient['branding']);
+        $this->assertStringContainsString($this->data['body'], $message->message_to_recipient['head']);
         $this->resetOriginalConfigForQueueAndConfirmation();
     }
 
@@ -176,42 +144,34 @@ class FormMailHelperMakeMessageTest extends \TestCase
         $this->updateConfigForQueueAndConfirmation(false, true);
         $premailerMock = \Mockery::mock('\\Pbc\\Premailer');
 
-        $data = [
-            'resource' => __METHOD__,
-            'head' => $this->faker->paragraph,
-            'subject' => $this->faker->sentence,
-            'recipient' => $this->faker->email,
-            'sender' => $this->faker->email,
-            'branding' => $this->faker->sentence,
-            'premailer' => $premailerMock
-        ];
-        $premailerMock->shouldReceive('html')->andReturn([
-            'resource' => $data['resource'],
-            'head' => $data['head'],
-            'subject' => $data['subject'],
-            'recipient' => $data['recipient'],
-            'sender' => $data['sender'],
-            'branding' => $data['branding'],
-            'html' => '<html><head><body>' . $data['head'] . '</body></head></html>',
-            'text' => $data['head']
+        $this->data['premailer'] = $premailerMock;
+        $premailerMock->shouldReceive(  'html')->andReturn([
+            'resource' => $this->data['resource'],
+            'head' => $this->data['head'],
+            'subject' => $this->data['subject'],
+            'recipient' => $this->data['recipient'],
+            'sender' => $this->data['sender'],
+            'branding' => $this->data['branding'],
+            'html' => '<html><head><body>' . $this->data['head'] . '</body></head></html>',
+            'text' => $this->data['head']
         ]);
-        $data['premailer'] = $premailerMock;
+        $this->data['premailer'] = $premailerMock;
 
-        $message = \FormMailHelper::makeMessage($data);
+        $message = \FormMailHelper::makeMessage($this->data);
         // once message is passed though premailer then the
         // return array should have keys "html" and "text"
         $this->assertArrayHasKey('html', $message->message_to_recipient);
-        $this->assertContains($data['head'], $message->message_to_recipient['html']);
+        $this->assertStringContainsString($this->data['head'], $message->message_to_recipient['html']);
         $this->assertArrayHasKey('text', $message->message_to_recipient);
         // in addition the return array should
         // have the original field passed
         // to makeMessage
-        $this->assertContains($data['head'], $message->message_to_recipient['text']);
-        $this->assertSame($data['subject'], $message->message_to_recipient['subject']);
-        $this->assertSame($data['recipient'], $message->message_to_recipient['recipient']);
-        $this->assertSame($data['sender'], $message->message_to_recipient['sender']);
-        $this->assertSame($data['branding'], $message->message_to_recipient['branding']);
-        $this->assertSame($data['head'], $message->message_to_recipient['head']);
+        $this->assertStringContainsString($this->data['head'], $message->message_to_recipient['text']);
+        $this->assertSame($this->data['subject'], $message->message_to_recipient['subject']);
+        $this->assertSame($this->data['recipient'], $message->message_to_recipient['recipient']);
+        $this->assertSame($this->data['sender'], $message->message_to_recipient['sender']);
+        $this->assertSame($this->data['branding'], $message->message_to_recipient['branding']);
+        $this->assertSame($this->data['head'], $message->message_to_recipient['head']);
         $this->resetOriginalConfigForQueueAndConfirmation();
     }
 
@@ -222,22 +182,13 @@ class FormMailHelperMakeMessageTest extends \TestCase
     public function testMakeMessageSetsMessageToSenderWhenQueued()
     {
         $this->updateConfigForQueueAndConfirmation(true, true);
-        $data = [
-            'resource' => __METHOD__,
-            'body' => $this->faker->paragraph,
-            'subject' => $this->faker->sentence,
-            'recipient' => $this->faker->email,
-            'name' => $this->faker->name,
-            'sender' => $this->faker->email,
-            'branding' => $this->faker->sentence
-        ];
-        $message = \FormMailHelper::makeMessage($data);
-        $this->assertContains($data['recipient'], $message->message_to_sender['subject']);
-        $this->assertContains($data['name'], $message->message_to_sender['subject']);
-        $this->assertSame($data['recipient'], $message->message_to_sender['recipient']);
-        $this->assertSame($data['sender'], $message->message_to_sender['sender']);
-        $this->assertSame($data['branding'], $message->message_to_sender['branding']);
-        $this->assertContains($data['body'], $message->message_to_sender['head']);
+        $message = \FormMailHelper::makeMessage($this->data);
+        $this->assertStringContainsString($this->data['recipient'], $message->message_to_sender['subject']);
+        $this->assertStringContainsString($this->data['name'], $message->message_to_sender['subject']);
+        $this->assertSame($this->data['recipient'], $message->message_to_sender['recipient']);
+        $this->assertSame($this->data['sender'], $message->message_to_sender['sender']);
+        $this->assertSame($this->data['branding'], $message->message_to_sender['branding']);
+        $this->assertStringContainsString($this->data['body'], $message->message_to_sender['head']);
         $this->resetOriginalConfigForQueueAndConfirmation();
     }
 
@@ -251,22 +202,15 @@ class FormMailHelperMakeMessageTest extends \TestCase
     public function testMakeMessageSetsMessageToSenderWhenQueuedWhereNameHasSpecialCharactersInIt()
     {
         $this->updateConfigForQueueAndConfirmation(true, true);
-        $data = [
-            'resource' => __METHOD__,
-            'body' => $this->faker->paragraph,
-            'subject' => $this->faker->sentence,
-            'recipient' => $this->faker->email,
-            'name' => 'Jacey O\'Keefe',
-            'sender' => $this->faker->email,
-            'branding' => $this->faker->sentence
-        ];
-        $message = \FormMailHelper::makeMessage($data);
-        $this->assertContains($data['recipient'], $message->message_to_sender['subject']);
-        $this->assertContains($data['name'], $message->message_to_sender['subject']);
-        $this->assertSame($data['recipient'], $message->message_to_sender['recipient']);
-        $this->assertSame($data['sender'], $message->message_to_sender['sender']);
-        $this->assertSame($data['branding'], $message->message_to_sender['branding']);
-        $this->assertContains($data['body'], $message->message_to_sender['head']);
+        $this->data['name'] = 'Jacey O\'Keefe';
+
+        $message = \FormMailHelper::makeMessage($this->data);
+        $this->assertStringContainsString($this->data['recipient'], $message->message_to_sender['subject']);
+        $this->assertStringContainsString($this->data['name'], $message->message_to_sender['subject']);
+        $this->assertSame($this->data['recipient'], $message->message_to_sender['recipient']);
+        $this->assertSame($this->data['sender'], $message->message_to_sender['sender']);
+        $this->assertSame($this->data['branding'], $message->message_to_sender['branding']);
+        $this->assertStringContainsString($this->data['body'], $message->message_to_sender['head']);
         $this->resetOriginalConfigForQueueAndConfirmation();
     }
 
@@ -279,52 +223,44 @@ class FormMailHelperMakeMessageTest extends \TestCase
         $this->updateConfigForQueueAndConfirmation(false, true);
         $premailerMock = \Mockery::mock('\\Pbc\\Premailer');
 
-        $data = [
-            'resource' => __METHOD__,
-            'head' => $this->faker->paragraph,
-            'subject' => $this->faker->sentence,
-            'recipient' => $this->faker->email,
-            'sender' => $this->faker->email,
-            'branding' => $this->faker->sentence,
-            'premailer' => $premailerMock
-        ];
+        $this->data['premailer'] = $premailerMock;
         $premailerMock->shouldReceive('html')->andReturn([
-            'resource' => $data['resource'],
-            'head' => $data['head'],
-            'subject' => $data['subject'],
-            'recipient' => $data['recipient'],
-            'sender' => $data['sender'],
-            'branding' => $data['branding'],
-            'html' => '<html><head><body>' . $data['head'] . '</body></head></html>',
-            'text' => $data['head']
+            'resource' => $this->data['resource'],
+            'head' => $this->data['head'],
+            'subject' => $this->data['subject'],
+            'recipient' => $this->data['recipient'],
+            'sender' => $this->data['sender'],
+            'branding' => $this->data['branding'],
+            'html' => '<html><head><body>' . $this->data['head'] . '</body></head></html>',
+            'text' => $this->data['head']
         ]);
-        $data['premailer'] = $premailerMock;
+        $this->data['premailer'] = $premailerMock;
 
-        $message = \FormMailHelper::makeMessage($data);
+        $message = \FormMailHelper::makeMessage($this->data);
         // once message is passed though premailer then the
         // return array should have keys "html" and "text"
         $this->assertArrayHasKey('html', $message->message_to_sender);
-        $this->assertContains($data['head'], $message->message_to_sender['html']);
+        $this->assertStringContainsString($this->data['head'], $message->message_to_sender['html']);
         $this->assertArrayHasKey('text', $message->message_to_sender);
         // in addition the return array should
         // have the original field passed
         // to makeMessage
-        $this->assertContains($data['head'], $message->message_to_sender['text']);
-        $this->assertSame($data['subject'], $message->message_to_sender['subject']);
-        $this->assertSame($data['recipient'], $message->message_to_sender['recipient']);
-        $this->assertSame($data['sender'], $message->message_to_sender['sender']);
-        $this->assertSame($data['branding'], $message->message_to_sender['branding']);
-        $this->assertSame($data['head'], $message->message_to_sender['head']);
+        $this->assertStringContainsString($this->data['head'], $message->message_to_sender['text']);
+        $this->assertSame($this->data['subject'], $message->message_to_sender['subject']);
+        $this->assertSame($this->data['recipient'], $message->message_to_sender['recipient']);
+        $this->assertSame($this->data['sender'], $message->message_to_sender['sender']);
+        $this->assertSame($this->data['branding'], $message->message_to_sender['branding']);
+        $this->assertSame($this->data['head'], $message->message_to_sender['head']);
         $this->resetOriginalConfigForQueueAndConfirmation();
     }
 
     /**
      * @test
      * @group MakeMessage
-     * @expectedException \Exception
      */
     public function testMakeMessageWillThrowExceptionWhenWritingToTheDB()
     {
+        $this->expectException(\Exception::class);
         $mock = \Mockery::mock('\\Pbc\\FormMail\\FormMailHelper[create]');
         $mock->shouldReceive('create')->once()->andThrow(\Exception::class);
         $this->app->instance(FormMail::class, $mock);
@@ -334,10 +270,10 @@ class FormMailHelperMakeMessageTest extends \TestCase
     /**
      * @test
      * @group MakeMessage
-     * @expectedException \Exception
      */
     public function testMakeMessageWillThrowExceptionWhenWritingMessageToRecipient()
     {
+        $this->expectException(\Exception::class);
         $mock = \Mockery::mock(
             '\\Pbc\\FormMail\\Helpers\\FormMailHelper[messageToRecipient,messageToSender]'
         );
@@ -349,10 +285,10 @@ class FormMailHelperMakeMessageTest extends \TestCase
     /**
      * @test
      * @group MakeMessage
-     * @expectedException \Exception
      */
     public function testMakeMessageWillThrowExceptionWhenWritingMessageToSender()
     {
+        $this->expectException(\Exception::class);
         $mock = \Mockery::mock(
             '\\Pbc\\FormMail\\Helpers\\FormMailHelper[messageToRecipient,messageToSender]'
         );

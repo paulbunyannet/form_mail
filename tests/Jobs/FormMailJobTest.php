@@ -1,5 +1,5 @@
 <?php
-namespace Pbc\FormMail\Tests\Jobs;
+namespace Tests\Jobs;
 
 /**
  * FormMailSendMessageTest
@@ -8,30 +8,19 @@ namespace Pbc\FormMail\Tests\Jobs;
  * Tests for the FormMailSendMessage job class
  *
  * @author Nate Nolting <naten@paulbunyan.net>
- * @package Pbc\FormMail\Tests\Jobs
+ * @package Tests\Jobs
  */
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Mockery;
 use Pbc\FormMail\Jobs\FormMailJob;
 use Pbc\FormMail\Jobs\FormMailSendMessage;
+use Tests\TestCase;
 
-class FormMailJobTest extends \TestCase
+class FormMailJobTest extends TestCase
 {
 
     use DatabaseTransactions;
-
-    public function setup()
-    {
-        parent::setUp();
-
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-        Mockery::close();
-    }
 
     /**
      * Check that when calling the premailer method on FormMailJob
@@ -64,9 +53,9 @@ class FormMailJobTest extends \TestCase
         $job->preflight('message_to_sender');
         $this->assertArrayHasKey('html', $job->formMail->message_to_sender);
         $this->assertArrayHasKey('text', $job->formMail->message_to_sender);
-        $this->assertContains($html['message_to_sender']['body'], $job->preflighted['message_to_sender']['html'], "html contains body content");
-        $this->assertContains($html['message_to_sender']['subject'], $job->preflighted['message_to_sender']['html'], "html contains subject content");
-        $this->assertContains($html['message_to_sender']['branding'], $job->preflighted['message_to_sender']['html'], "html contains branding content");
+        $this->assertStringContainsString($html['message_to_sender']['body'], $job->preflighted['message_to_sender']['html'], "html contains body content");
+        $this->assertStringContainsString($html['message_to_sender']['subject'], $job->preflighted['message_to_sender']['html'], "html contains subject content");
+        $this->assertStringContainsString($html['message_to_sender']['branding'], $job->preflighted['message_to_sender']['html'], "html contains branding content");
 
     }
     /**
@@ -100,9 +89,9 @@ class FormMailJobTest extends \TestCase
         $job->preflight('message_to_recipient');
         $this->assertArrayHasKey('html', $job->formMail->message_to_recipient);
         $this->assertArrayHasKey('text', $job->formMail->message_to_recipient);
-        $this->assertContains($html['message_to_recipient']['body'], $job->preflighted['message_to_recipient']['html'], "html contains body content");
-        $this->assertContains($html['message_to_recipient']['subject'], $job->preflighted['message_to_recipient']['html'], "html contains subject content");
-        $this->assertContains($html['message_to_recipient']['branding'], $job->preflighted['message_to_recipient']['html'], "html contains branding content");
+        $this->assertStringContainsString($html['message_to_recipient']['body'], $job->preflighted['message_to_recipient']['html'], "html contains body content");
+        $this->assertStringContainsString($html['message_to_recipient']['subject'], $job->preflighted['message_to_recipient']['html'], "html contains subject content");
+        $this->assertStringContainsString($html['message_to_recipient']['branding'], $job->preflighted['message_to_recipient']['html'], "html contains branding content");
 
     }
 }

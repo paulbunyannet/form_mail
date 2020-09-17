@@ -2,12 +2,11 @@
 
 namespace Pbc\FormMail\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-use DB;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Pbc\Bandolier\Type\Encoded;
-use Pbc\FormMail\FormMail;
 use Pbc\FormMail\Helpers\Confirmation;
 use Pbc\FormMail\Helpers\FormMailHelper;
 use Pbc\FormMail\Helpers\Queue;
@@ -16,16 +15,16 @@ use Pbc\FormMail\Traits\QueueTrait;
 use Pbc\FormMail\Traits\RulesTrait;
 use Pbc\FormMail\Traits\SendTrait;
 use Pbc\Premailer;
-use Response;
-use Validator;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * Class FormMailController
  * @package Pbc\FormMail\Http\Controllers
  */
-class FormMailController extends Controller
+class FormMailController extends \Illuminate\Routing\Controller
 {
-    use MessageTrait, QueueTrait, RulesTrait, SendTrait;
+    use MessageTrait, QueueTrait, RulesTrait, SendTrait, ValidatesRequests, AuthorizesRequests, DispatchesJobs;
 
     /**
      * path to resources
@@ -45,11 +44,7 @@ class FormMailController extends Controller
     /**
      * @var array
      */
-    protected $rules = [
-        'email' => 'required|email',
-        'name' => 'required',
-        'fields' => 'required|array'
-    ];
+    protected $rules = [];
     /**
      * @var Premailer
      */
@@ -68,7 +63,9 @@ class FormMailController extends Controller
 
     /**
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param array $data
+     * @return mixed
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function requestHandler(Request $request, $data = [])
     {
@@ -77,7 +74,21 @@ class FormMailController extends Controller
             'confirmation' => Confirmation::getDefault(),
         ];
 
-        $validator = Validator::make($request->all(), $this->rules, []);
+        $validator = Validator::make(
+            $request->all(),
+            array_merge($this->rules,
+                [
+                    'email' => 'required|email',
+                    'name' => 'required',
+                    'fields' => 'required|array'
+                ]
+            ),
+            [
+                'required' => 'The :attribute field is required.',
+                'email' => 'The :attribute must be a valid email address.',
+                'array' => 'The :attribute must be an array.',
+            ]
+        );
         if ($validator->fails()) {
             $return['error'] = $validator->errors()->all();
             return Response::json($return);

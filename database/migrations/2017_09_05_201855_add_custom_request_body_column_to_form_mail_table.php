@@ -13,7 +13,7 @@ class AddCustomRequestBodyColumnToFormMailTable extends Migration
     public function up()
     {
         Schema::table('form_mail', function (Blueprint $table) {
-            $table->longText('custom_request_body');
+            $table->longText('custom_request_body')->nullable();
         });
     }
 

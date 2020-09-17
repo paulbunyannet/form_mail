@@ -13,7 +13,7 @@ class AddBrandingColumnToFormMailTable extends Migration
     public function up()
     {
         Schema::table('form_mail', function (Blueprint $table) {
-            $table->addColumn('text', 'branding');
+            $table->addColumn('text', 'branding')->nullable();
         });
     }
 

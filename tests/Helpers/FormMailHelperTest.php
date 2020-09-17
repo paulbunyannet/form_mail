@@ -6,63 +6,28 @@
  * Test for FormMailHelper
  *
  * @author Nate Nolting <naten@paulbunyan.net>
- * @package Pbc\FormMail\Tests\Http\Controllers
+ * @package Tests\Http\Controllers
  * @subpackage Subpackage
  */
 
-namespace Pbc\FormMail\Tests\Helpers;
+namespace Tests\Helpers;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Pbc\FormMail\Helpers\FormMailHelper;
 use Pbc\FormMail\Http\Controllers\FormMailController;
+use Tests\TestCase;
 
 /**
  * Class FormMailHelperTest
- * @package Pbc\FormMail\Tests\Http\Controllers
+ * @package Tests\Http\Controllers
  */
-class FormMailHelperTest extends \TestCase
+class FormMailHelperTest extends TestCase
 {
     use DatabaseTransactions;
-    /**
-     * @var \Faker\Factory::create
-     */
-    protected $faker;
     /**
      * @var
      */
     protected $configFile;
-
-    /**
-     * Set up test
-     */
-    public function setUp()
-    {
-        $this->faker = \Faker\Factory::create();
-        parent::setUp();
-    }
-
-    /**
-     * Tear down test
-     */
-    public function tearDown()
-    {
-        parent::tearDown();
-        \Mockery::close();
-    }
-
-    /**
-     * This method is called when a test method did not execute successfully.
-     *
-     * @param \Exception $e
-     *
-     * @since Method available since Release 3.4.0
-     *
-     * @throws \Exception
-     */
-    protected function onNotSuccessfulTest(\Exception $e)
-    {
-        throw $e;
-    }
 
     /**
      * Check that if branding is set in the config

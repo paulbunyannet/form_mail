@@ -1,8 +1,9 @@
 <?php
-namespace Pbc\FormMail\Tests\Decorators;
+namespace Tests\Decorators;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Pbc\FormMail\Decorators\FormMailPremailDecorator;
+use Tests\TestCase;
 
 /**
  * ${CLASS_NAME}
@@ -15,27 +16,10 @@ use Pbc\FormMail\Decorators\FormMailPremailDecorator;
  * @subpackage Subpackage
  */
 
-class FormMailPremailDecoratorTest extends \TestCase
+class FormMailPremailDecoratorTest extends TestCase
 {
 
     use DatabaseTransactions;
-    /**
-     * Set up test
-     */
-    public function setUp()
-    {
-        $this->faker = \Faker\Factory::create();
-        parent::setUp();
-    }
-
-    /**
-     * Tear down test
-     */
-    public function tearDown()
-    {
-        parent::tearDown();
-        \Mockery::close();
-    }
 
     /**
      * @test

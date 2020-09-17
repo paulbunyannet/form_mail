@@ -2,6 +2,7 @@
 
 namespace Pbc\FormMail\Traits;
 
+use Pbc\FormMail\Facades\FormMailHelper;
 use Pbc\FormMail\FormMail;
 
 /**
@@ -13,11 +14,12 @@ trait QueueTrait {
 
 
     /**
-     * Queue the messages for sending on next queue process
-     *
      * @param FormMail $formMailModel
+     * @param \Pbc\Premailer $premailer
+     * @param int $defaultDelay
+     * @return mixed
      */
-    public function queue(FormMail $formMailModel, \Pbc\Premailer $premailer, $defaultDelay=10)
+    public function queue(FormMail $formMailModel, \Pbc\Premailer $premailer, int $defaultDelay = 10) : FormMailHelper
     {
         return \FormMailHelper::queue($formMailModel, $premailer, $defaultDelay);
     }

@@ -13,7 +13,6 @@ namespace Pbc\FormMail\Decorators;
  */
 
 use Pbc\Bandolier\Type\Strings;
-use Pbc\Bandolier\Type\Encoded;
 
 /**
  * @property string $url app url
@@ -32,10 +31,8 @@ class FormMailDecorator
      */
     public function __construct(array $data = [])
     {
-        if ($data) {
-            foreach ($data as $key => $value) {
-                $this->{$key} = $value;
-            }
+        foreach ($data as $key => $value) {
+            $this->{$key} = $value;
         }
     }
 
@@ -44,7 +41,7 @@ class FormMailDecorator
      *
      * @return array
      */
-    public function resourceInject()
+    public function resourceInject() : array
     {
         return [
             'form' => Strings::formatForTitle($this->formName),
@@ -61,9 +58,8 @@ class FormMailDecorator
      *
      * @return string
      */
-    public function resourceRoot()
+    public function resourceRoot() : string
     {
         return $this->resource . '::body';
     }
-
 }

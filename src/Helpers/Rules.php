@@ -2,9 +2,13 @@
 
 namespace Pbc\FormMail\Helpers;
 
-class Rules {
-
-    public static function prepRules(array $rules = [])
+class Rules
+{
+    /**
+     * @param array $rules
+     * @return array
+     */
+    public static function prepRules(array $rules = []) : array
     {
         return array_merge(
             $rules,
@@ -12,5 +16,4 @@ class Rules {
             \Config::get('route_rules.' . \Route::currentRouteName()) ? \Config::get('route_rules.' . \Route::currentRouteName()) : []
         );
     }
-
 }

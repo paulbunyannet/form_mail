@@ -11,13 +11,13 @@ use Pbc\Premailer as Preflight;
 class FormMailPreflightMessageToSender
 {
     use InteractsWithQueue, SerializesModels, Queueable;
-    public $formMail;
-    public $premailer;
+    public FormMail $formMail;
+    public Preflight $premailer;
 
     /**
-     * Create a new job instance.
-     *
-     * @return void
+     * FormMailPreflightMessageToSender constructor.
+     * @param FormMail $formMail
+     * @param Preflight $premailer
      */
     public function __construct(FormMail $formMail, Preflight $premailer)
     {

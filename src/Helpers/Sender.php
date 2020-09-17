@@ -15,7 +15,7 @@ class Sender {
      * @param null $sender email to use as sender, either a valid email address or the username for username@example.com
      * @return array|null|string
      */
-    public static function makeSender($data = [], $sender = null, $url = null)
+    public static function makeSender(array $data = [], $sender = null, $url = null) : string
     {
         if(array_key_exists(FormMailController::SENDER, $data) && filter_var($data[FormMailController::SENDER], FILTER_VALIDATE_EMAIL)) {
             return $data[FormMailController::SENDER];

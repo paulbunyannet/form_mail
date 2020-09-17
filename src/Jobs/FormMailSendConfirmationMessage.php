@@ -15,12 +15,10 @@ use Pbc\Premailer;
 class FormMailSendConfirmationMessage extends FormMailJob implements ShouldQueue
 {
     use InteractsWithQueue, SerializesModels;
-    /**
-     * @var FormMail
-     */
-    public $formMail;
 
-    public $doConfirmation;
+    public FormMail $formMail;
+
+    public bool $doConfirmation;
 
     /**
      * Create a new job instance.

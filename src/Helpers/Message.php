@@ -18,12 +18,11 @@ class Message
 {
 
     /**
-     * Prep message that is sent to recipient for storage
-     *
-     * @param \Pbc\FormMail\FormMail $formMailModel
+     * @param FormMail $formMailModel
+     * @param Premailer $premailer
      * @return array
      */
-    public static function messageToRecipient(FormMail $formMailModel, Premailer $premailer)
+    public static function messageToRecipient(FormMail $formMailModel, Premailer $premailer) : array
     {
         $data = $formMailModel->toArray();
         // Go though each of the keys in the form mail model and
@@ -55,16 +54,17 @@ class Message
             );
             $formMailModel->save();
         }
+
+        return $data;
     }
 
 
     /**
-     * Prep confirmation message for storage
-     *
-     * @param \Pbc\FormMail\FormMail $formMailModel
+     * @param FormMail $formMailModel
+     * @param Premailer $premailer
      * @return array
      */
-    public static function messageToSender(FormMail $formMailModel, Premailer $premailer)
+    public static function messageToSender(FormMail $formMailModel, Premailer $premailer) : array
     {
         $data = $formMailModel->toArray();
         // Go though each of the keys in the form mail model and
@@ -93,16 +93,16 @@ class Message
             );
             $formMailModel->save();
         }
+
+        return $data;
     }
 
     /**
-     * Make message
-     *
      * @param array $data
-     * @return static
+     * @return FormMail
      * @throws \Exception
      */
-    public static function makeMessage($data = [])
+    public static function makeMessage(array $data = []) : FormMail
     {
         // make record in formMail model
         \DB::beginTransaction();

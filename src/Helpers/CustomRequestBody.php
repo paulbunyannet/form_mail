@@ -12,6 +12,8 @@
 namespace Pbc\FormMail\Helpers;
 
 
+use Illuminate\Support\Facades\Request;
+
 /**
  * Class CustomRequestBody
  * @package Pbc\FormMail\Helpers
@@ -19,11 +21,11 @@ namespace Pbc\FormMail\Helpers;
 class CustomRequestBody implements HelperContract
 {
     /**
-     *
+     * @return array|mixed|string|null
      */
     public static function getDefault()
     {
-        return \Request::instance()->query('custom_request_body');
+        return Request::instance()->query('custom_request_body');
     }
 
     /**
@@ -33,10 +35,9 @@ class CustomRequestBody implements HelperContract
     public static function get(array $data = [])
     {
         $classKey = 'custom_request_body';
-        if (array_key_exists('custom_request_body', $data)) {
+        if (array_key_exists($classKey, $data)) {
             return $data[$classKey];
         }
-
         return self::getDefault();
     }
 }

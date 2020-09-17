@@ -11,15 +11,14 @@ use Pbc\FormMail\Jobs\FormMailSendConfirmationMessage;
  * Class Queue
  * @package Pbc\FormMail\Helpers
  */
-class Queue implements HelperContract {
-
-
+class Queue implements HelperContract
+{
     /**
-     * Queue the messages for sending on next queue process
-     *
      * @param FormMail $formMailModel
+     * @param \Pbc\Premailer $premailer
+     * @param int $defaultDelay
      */
-    public static function queue(FormMail $formMailModel, \Pbc\Premailer $premailer, $defaultDelay=10)
+    public static function queue(FormMail $formMailModel, \Pbc\Premailer $premailer, int $defaultDelay=10)
     {
         $formMailSendMessage =  (new FormMailSendMessage($formMailModel, $premailer))->delay(config('form_mail.delay.send_message', $defaultDelay));
         app(Dispatcher::class)->dispatch($formMailSendMessage);
@@ -32,9 +31,9 @@ class Queue implements HelperContract {
 
     /**
      * @param array $data
-     * @return mixed
+     * @return bool
      */
-    public static function get(array $data = [])
+    public static function get(array $data = []) : bool
     {
         $classKey = strtolower(__CLASS__);
         if(array_key_exists($classKey, $data)) {
@@ -45,12 +44,10 @@ class Queue implements HelperContract {
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
-    public static function getDefault()
+    public static function getDefault() : bool
     {
         return \Config::get('form_mail.queue');
     }
-
-
 }

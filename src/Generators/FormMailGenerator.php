@@ -16,22 +16,18 @@ class FormMailGenerator
 
     public function __construct(array $data = [])
     {
-        if ($data) {
-            foreach ($data as $key => $value) {
-                $this->{$key} = $value;
-            }
+        foreach ($data as $key => $value) {
+            $this->{$key} = $value;
         }
     }
 
-    public function resource()
+    public function resource() : string
     {
         return str_replace('\\', '.', strtolower($this->class)) . '.' . strtolower($this->method);
     }
 
-    public function formName()
+    public function formName() : string
     {
         return preg_replace('/[\s+\-]/', '_', $this->route);
     }
-
-
 }

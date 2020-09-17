@@ -16,7 +16,7 @@ class Recipient {
      * @param null $url
      * @return string
      */
-    public static function makeRecipient($form, $url=null)
+    public static function makeRecipient(string $form, $url = null) : string
     {
         if (!$url) {
             $url = \Config::get('app.url');

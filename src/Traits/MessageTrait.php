@@ -15,26 +15,22 @@ trait MessageTrait
 {
 
     /**
-     * Prep message that is sent to recipient for storage
-     *
-     * @param FormMailHelper|FormMail $formMailModel
+     * @param \Pbc\FormMail\Facades\FormMailHelper $formMailModel
      * @param Premailer $premailer
      * @return array
      */
-    public function messageToRecipient(FormMailHelper $formMailModel, Premailer $premailer)
+    public function messageToRecipient(\Pbc\FormMail\Facades\FormMailHelper $formMailModel, Premailer $premailer) : array
     {
-        return \FormMailHelper::messageToRecipient($formMailModel, $premailer);
+        return \Pbc\FormMail\Facades\FormMailHelper::messageToRecipient($formMailModel, $premailer);
     }
 
     /**
-     * Prep confirmation message for storage
-     *
-     * @param FormMailHelper|FormMail $formMailModel
+     * @param \Pbc\FormMail\Facades\FormMailHelper $formMailModel
      * @param Premailer $premailer
      * @return array
      */
-    public function messageToSender(FormMailHelper $formMailModel, Premailer $premailer)
+    public function messageToSender(\Pbc\FormMail\Facades\FormMailHelper $formMailModel, Premailer $premailer) : array
     {
-        return \FormMailHelper::messageToSender($formMailModel, $premailer);
+        return \Pbc\FormMail\Facades\FormMailHelper::messageToSender($formMailModel, $premailer);
     }
 }

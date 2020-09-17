@@ -15,7 +15,7 @@ class Subject {
      * @param $data
      * @return string
      */
-    public static function makeSubject($data)
+    public static function makeSubject(array $data) : string
     {
         $inject = \FormMailHelper::languageInject($data);
         $output = [];

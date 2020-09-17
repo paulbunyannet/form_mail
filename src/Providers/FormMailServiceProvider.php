@@ -21,7 +21,7 @@ class FormMailServiceProvider extends ServiceProvider
         $this->loadViewsFrom(dirname(__DIR__) . '/Resources/Views', 'pbc_form_mail');
 
         // publish the config
-        $this->publishes([dirname(__DIR__) .'/Config/FormMail.php' => config_path('form_mail.php')], 'config');
+        $this->publishes([dirname(__DIR__,2) . '/config/form_mail.php' => config_path('form_mail.php')], 'config');
 
         // publish the migrations
         $this->publishes([realpath(dirname(dirname(__DIR__))) . '/database/migrations' => $this->app->databasePath() . '/migrations'], 'migrations');
@@ -31,9 +31,7 @@ class FormMailServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the application services.
-     *
-     * @return void
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function register()
     {

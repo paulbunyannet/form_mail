@@ -11,6 +11,8 @@
 
 namespace Pbc\FormMail\Helpers;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Pbc\Bandolier\Type\Encoded;
 use Pbc\Bandolier\Type\Strings;
 use Pbc\FormMail\Decorators\FormMailDecorator;
@@ -31,7 +33,7 @@ class FormMailHelper
      * @param Premailer $premailer
      * @return array
      */
-    public function messageToRecipient(FormMail $formMailModel, Premailer $premailer)
+    public function messageToRecipient(FormMail $formMailModel, Premailer $premailer) : array
     {
         return Message::messageToRecipient($formMailModel, $premailer);
     }
@@ -41,7 +43,7 @@ class FormMailHelper
      * @param Premailer $premailer
      * @return array
      */
-    public function messageToSender(FormMail $formMailModel, Premailer $premailer)
+    public function messageToSender(FormMail $formMailModel, Premailer $premailer) : array
     {
         return Message::messageToSender($formMailModel, $premailer);
 
@@ -51,19 +53,18 @@ class FormMailHelper
      * @param array $rules
      * @return array
      */
-    public function prepRules(array $rules = [])
+    public function prepRules(array $rules = []) : array
     {
-        return Rules::prepRules([]);
+        return Rules::prepRules($rules);
     }
 
     /**
-     * setup resource string
-     *
+     * @param array $data
      * @param $class
      * @param $function
      * @return $this
      */
-    public function resource(&$data, $class, $function)
+    public function resource(array &$data, $class, $function) : FormMailHelper
     {
         if (array_key_exists('resource', $data)) {
             return $this;
@@ -78,7 +79,7 @@ class FormMailHelper
      * @param $method
      * @return string
      */
-    public function makeResource($class, $method)
+    public function makeResource($class, $method) : string
     {
         $generator = new FormMailGenerator(['class' => $class, 'method' => $method]);
         return $generator->resource();
@@ -90,7 +91,7 @@ class FormMailHelper
      * @param $data
      * @return $this
      */
-    public function response(&$data)
+    public function response(array &$data) : FormMailHelper
     {
         if (array_key_exists('response', $data)) {
             return $this;
@@ -105,7 +106,7 @@ class FormMailHelper
      * @param $data
      * @return string
      */
-    public function makeResponse($data)
+    public function makeResponse(array $data) : string
     {
         return json_encode(
             [
@@ -136,7 +137,7 @@ class FormMailHelper
     /**
      * @return string
      */
-    public static function resourceRoot()
+    public static function resourceRoot() : string
     {
         $decorator = new FormMailDecorator(['resource' => FormMailController::RESOURCE_ROOT]);
         return $decorator->resourceRoot();
@@ -148,7 +149,7 @@ class FormMailHelper
      * @param array $data
      * @return $this
      */
-    public function branding(&$data)
+    public function branding(array &$data) : FormMailHelper
     {
         if (array_key_exists('branding', $data)) {
             return $this;
@@ -161,34 +162,32 @@ class FormMailHelper
     /**
      * @return array|mixed|null|string
      */
-    public function makeBranding($data = [])
+    public function makeBranding(array $data = [])
     {
         $branding = config('form_mail.branding');
 
         if ($branding) {
             return $branding;
-        } else {
-            $formName = array_key_exists('formName', $data) ? $data['formName'] : $this->makeFormName();
-            return \Lang::get(
-                'pbc_form_mail::body.branding',
-                [
-                    'form' => Strings::formatForTitle($formName),
-                    'domain' => \Config::get('app.url')
-                ]
-            );
         }
+        $formName = array_key_exists('formName', $data) ? $data['formName'] : $this->makeFormName();
+        return \Lang::get(
+            'pbc_form_mail::body.branding',
+            [
+                'form' => Strings::formatForTitle($formName),
+                'domain' => \Config::get('app.url')
+            ]
+        );
 
     }
 
     /**
-     * Get form name string
-     *
-     * @return mixed
+     * @param null $route
+     * @return string
      */
-    public function makeFormName($route = null)
+    public function makeFormName($route = null) : string
     {
         if (!$route) {
-            $route = \Route::currentRouteName();
+            $route = Route::currentRouteName();
         }
         $generator = new FormMailGenerator(['route' => $route]);
         return $generator->formName();
@@ -198,7 +197,7 @@ class FormMailHelper
      * @param $data
      * @return $this
      */
-    public function head(&$data)
+    public function head(array &$data) : FormMailHelper
     {
         if (array_key_exists('head', $data)) {
             return $this;
@@ -212,7 +211,7 @@ class FormMailHelper
      * @param $data
      * @return string
      */
-    public function makeHead($data)
+    public function makeHead(array $data) : string
     {
         return Head::makeHead($data);
     }
@@ -221,7 +220,7 @@ class FormMailHelper
      * @param array $data
      * @return array
      */
-    public function languageInject(array $data)
+    public function languageInject(array $data) : array
     {
         $decorator = new FormMailDecorator(array_merge($data, [
             'data' => $data,
@@ -235,11 +234,10 @@ class FormMailHelper
     }
 
     /**
-     * Get form name string
-     *
+     * @param array $data
      * @return $this
      */
-    public function formName(&$data)
+    public function formName(array &$data) : FormMailHelper
     {
         if (array_key_exists('formName', $data)) {
             return $this;
@@ -249,12 +247,11 @@ class FormMailHelper
     }
 
     /**
-     * Get request inputs and their matching label input
-     *
+     * @param array $data
      * @param Request $request
      * @return $this
      */
-    public function fields(&$data, $request)
+    public function fields(array &$data, Request $request) : FormMailHelper
     {
         if (array_key_exists('fields', $data)) {
             return $this;
@@ -269,7 +266,7 @@ class FormMailHelper
      * @param $request
      * @return array
      */
-    public function makeFields($request)
+    public function makeFields(Request $request) : array
     {
         $data = [];
         foreach ($request->input('fields') as $field) {
@@ -284,12 +281,12 @@ class FormMailHelper
     }
 
     /**
-     * @param $label
-     * @param $value
-     * @param null $field
-     * @return array
+     * @param string $label
+     * @param string $value
+     * @param string $field
+     * @return string[]
      */
-    public function prepField($label, $value, $field = null)
+    public function prepField(string $label, string $value, string $field) : array
     {
         return ['label' => $label, 'value' => $value, 'field' => $field];
     }
@@ -300,7 +297,7 @@ class FormMailHelper
      * @param array $data
      * @return $this
      */
-    public function subject(&$data)
+    public function subject(array &$data) : FormMailHelper
     {
         if (array_key_exists('subject', $data)) {
             return $this;
@@ -311,11 +308,10 @@ class FormMailHelper
     }
 
     /**
-     * Make default subject string
-     *
+     * @param array $data
      * @return string
      */
-    public function makeSubject(array $data = [])
+    public function makeSubject(array $data = []) : string
     {
         // make form name if not already set
         $formName = array_key_exists('formName', $data) ? $data['formName'] : $this->makeFormName();
@@ -331,7 +327,6 @@ class FormMailHelper
                     $inject);
             }
         }
-
         // default if subject lines were not found
         return $output ? json_encode($output) : Strings::formatForTitle($formName) . ' Form Submission';
     }
@@ -341,7 +336,7 @@ class FormMailHelper
      * @param $data
      * @return array
      */
-    public function premailer(Premailer $premailer, $data)
+    public function premailer(Premailer $premailer, array $data) : array
     {
         // send out message to recipient
         // try and send the message with layout through Premailer
@@ -350,10 +345,11 @@ class FormMailHelper
     }
 
     /**
-     * @param $form
+     * @param array $data
+     * @param null $value
      * @return $this
      */
-    public function sender(&$data, $value = null)
+    public function sender(array &$data, $value = null) : FormMailHelper
     {
         if (array_key_exists(FormMailController::SENDER, $data)) {
             return $this;
@@ -363,22 +359,22 @@ class FormMailHelper
     }
 
     /**
-     * Make sender address
-     *
-     * @param $data
-     * @param string $sender
-     * @return array|null|string
+     * @param array $data
+     * @param null $sender
+     * @param null $url
+     * @return string
      */
-    public function makeSender($data, $sender = null, $url = null)
+    public function makeSender(array $data, $sender = null, $url = null) : string
     {
         return Sender::makeSender($data, $sender, $url);
     }
 
     /**
-     * @param $form
+     * @param array $data
+     * @param string $form
      * @return $this
      */
-    public function recipient(&$data, $form)
+    public function recipient(array &$data, string $form) : FormMailHelper
     {
         if (array_key_exists(FormMailController::RECIPIENT, $data)) {
             return $this;
@@ -396,25 +392,26 @@ class FormMailHelper
      * @param $form
      * @return static
      */
-    public function makeRecipient($form, $url = null)
+    public function makeRecipient(string $form, $url = null) : string
     {
         return Recipient::makeRecipient($form, $url);
     }
 
     /**
      * @param array $data
-     * @return static
+     * @return FormMail
+     * @throws \Exception
      */
-    public function makeMessage($data = [])
+    public function makeMessage(array $data = []) : FormMail
     {
         return Message::makeMessage($data);
     }
 
     /**
-     * Setup confirmation boolean
+     * @param array $data
      * @return $this
      */
-    public function confirmation(&$data)
+    public function confirmation(array &$data) : FormMailHelper
     {
         $key = strtolower(__FUNCTION__);
         if (array_key_exists($key, $data)) {
@@ -429,7 +426,7 @@ class FormMailHelper
      * @param $data
      * @return $this
      */
-    public function queue(&$data)
+    public function queue(array &$data) : FormMailHelper
     {
         $key = strtolower(__FUNCTION__);
         if (array_key_exists($key, $data)) {
@@ -444,7 +441,7 @@ class FormMailHelper
      * @param $data
      * @return $this
      */
-    public function customRequestBody(&$data)
+    public function customRequestBody(array &$data) : FormMailHelper
     {
         $data['custom_request_body'] = \Request::instance()->query('customRequestBody');
         return $this;

@@ -1,5 +1,5 @@
 <?php
-namespace Pbc\FormMail\Tests\Jobs;
+namespace Tests\Jobs;
 
 /**
  * FormMailSendMessageTest
@@ -8,29 +8,18 @@ namespace Pbc\FormMail\Tests\Jobs;
  * Tests for the FormMailSendMessage job class
  *
  * @author Nate Nolting <naten@paulbunyan.net>
- * @package Pbc\FormMail\Tests\Jobs
+ * @package Tests\Jobs
  */
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Mockery;
 use Pbc\FormMail\Jobs\FormMailSendMessage;
+use Tests\TestCase;
 
-class FormMailSendMessageTest extends \TestCase
+class FormMailSendMessageTest extends TestCase
 {
 
     use DatabaseTransactions;
-
-    public function setup()
-    {
-        parent::setUp();
-
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-        Mockery::close();
-    }
 
     /**
      * Job does nothing if message_sent_to_recipient is already true
@@ -48,17 +37,17 @@ class FormMailSendMessageTest extends \TestCase
         $job = new FormMailSendMessage($formMailMock, $premailerMock);
         $this->assertNull($job->handle());
     }
-    
+
     /**
      * Test that handle will throw an exception if the html and
      * text keys are missing in message_to_recipient
      *
      * @test
-     * @expectedException \Exception
-     * @expectedExceptionMessage Missing html and/or text keys in message_to_recipient
      */
     public function the_handle_throws_an_exception_if_html_and_text_keys_are_missing()
     {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Missing html and/or text keys in message_to_recipient');
         $faker = \Faker\Factory::create();
         $formMailMock = Mockery::mock('Pbc\FormMail\FormMail');
         $this->app->instance('Pbc\FormMail\FormMail', $formMailMock);
@@ -100,13 +89,12 @@ class FormMailSendMessageTest extends \TestCase
     /**
      * Check that handle will throw an exception if the
      * recipient is an invalid email address
-     *
-     * @expectedException \Exception
-     * @expectedExceptionMessage Invalid recipient address
      * @test
      */
     public function the_handle_will_throw_an_exception_if_recipient_is_not_an_email_address()
     {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Invalid recipient address');
         $faker = \Faker\Factory::create();
         $formMailMock = Mockery::mock('Pbc\FormMail\FormMail');
         $this->app->instance('Pbc\FormMail\FormMail', $formMailMock);
@@ -161,13 +149,12 @@ class FormMailSendMessageTest extends \TestCase
     /**
      * Check that handle will throw an exception if the
      * recipient is an invalid email address
-     *
-     * @expectedException \Exception
-     * @expectedExceptionMessage Invalid sender address
      * @test
      */
     public function the_handle_will_throw_an_exception_if_sender_is_not_an_email_address()
     {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Invalid sender address');
         $faker = \Faker\Factory::create();
         $formMailmock = Mockery::mock('Pbc\FormMail\FormMail');
         $this->app->instance('Pbc\FormMail\FormMail', $formMailmock);
@@ -295,5 +282,5 @@ class FormMailSendMessageTest extends \TestCase
         $job = new FormMailSendMessage($formMailMock, $premailerMock);
         $this->assertNull($job->handle());
     }
-    
+
 }

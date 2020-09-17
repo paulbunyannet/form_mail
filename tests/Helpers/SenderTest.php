@@ -6,15 +6,16 @@
  * Tests for Sender helper
  *
  * @author Nate Nolting <naten@paulbunyan.net>
- * @package Pbc\FormMail\Tests\Helpers
+ * @package Tests\Helpers
  */
 
-namespace Pbc\FormMail\Tests\Helpers;
+namespace Tests\Helpers;
 
 
 use Pbc\FormMail\Helpers\Sender;
+use Tests\TestCase;
 
-class SenderTest extends \TestCase
+class SenderTest extends TestCase
 {
 
     /**

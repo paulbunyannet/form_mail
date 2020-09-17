@@ -1,5 +1,5 @@
 <?php
-namespace Pbc\FormMail\Tests\Helpers;
+namespace Tests\Helpers;
 /**
  * GreetingTest
  *
@@ -7,16 +7,17 @@ namespace Pbc\FormMail\Tests\Helpers;
  * Test for greeting helper
  *
  * @author Nate Nolting <naten@paulbunyan.net>
- * @package Pbc\FormMail\Tests\Helpers
+ * @package Tests\Helpers
  * @subpackage Subpackage
  */
 
-namespace Pbc\FormMail\Tests\Helpers;
+namespace Tests\Helpers;
 
 
 use Pbc\FormMail\Helpers\Greeting;
+use Tests\TestCase;
 
-class GreetingTest extends \TestCase
+class GreetingTest extends TestCase
 {
 
     /**
@@ -37,5 +38,5 @@ class GreetingTest extends \TestCase
 
 
     }
-    
+
 }

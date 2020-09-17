@@ -13,7 +13,7 @@ class AddQueueColumnToFormMailTable extends Migration
     public function up()
     {
         Schema::table('form_mail', function (Blueprint $table) {
-            $table->boolean('queue');
+            $table->boolean('queue')->default(false);
         });
     }
 

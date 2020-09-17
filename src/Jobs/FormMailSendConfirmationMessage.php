@@ -2,16 +2,11 @@
 
 namespace Pbc\FormMail\Jobs;
 
-use App\Jobs\Job;
-use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Pbc\FormMail\FormMail;
-use Pbc\FormMail\Helpers\FormMailHelper;
-use Pbc\FormMail\Http\Controllers\FormMailController;
 use Pbc\Premailer;
-use Pbc\Bandolier\Type\Encoded;
 
 /**
  * Class FormMailSendConfirmationMessage
@@ -54,7 +49,7 @@ class FormMailSendConfirmationMessage extends FormMailJob implements ShouldQueue
                  ->validateMessageToSender()
                  ->validateRecipient()
                  ->validateSender();
-            
+
             \Mail::send('pbc_form_mail_template::body', ['data' => $this->formMail->message_to_sender], function ($message) {
                 $message->to($this->formMail->sender)
                     ->from($this->formMail->recipient)
@@ -67,6 +62,4 @@ class FormMailSendConfirmationMessage extends FormMailJob implements ShouldQueue
             $this->formMail->save();
         }
     }
-
-
 }

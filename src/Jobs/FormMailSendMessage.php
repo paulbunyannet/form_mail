@@ -5,9 +5,7 @@ namespace Pbc\FormMail\Jobs;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
-use Pbc\FormMail\Http\Controllers\FormMailController;
 
 /**
  * Class FormMailSendMessage

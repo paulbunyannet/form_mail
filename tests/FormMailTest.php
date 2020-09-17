@@ -1,5 +1,5 @@
 <?php
-namespace Pbc\FormMail\Tests;
+namespace Tests;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Mockery;
@@ -15,21 +15,9 @@ use Pbc\FormMail\FormMail;
  * @package ${NAMESPACE}
  * @subpackage Subpackage
  */
-class FormMailTest extends \TestCase
+class FormMailTest extends TestCase
 {
     use DatabaseTransactions;
-    public function setup()
-    {
-        parent::setUp();
-        $this->faker = \Faker\Factory::create();
-
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-        Mockery::close();
-    }
 
     /**
      * Check that the head column can be set

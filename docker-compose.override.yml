@@ -1,0 +1,5 @@
+version: '3.1'
+services:
+
+  code:
+    image: jenkins.paulbunyan.net:5000/php:7.4

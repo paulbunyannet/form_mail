@@ -13,7 +13,7 @@ class AddConfirmationColumnToFormMailTable extends Migration
     public function up()
     {
         Schema::table('form_mail', function (Blueprint $table) {
-            $table->boolean('confirmation');
+            $table->boolean('confirmation')->default(false);
         });
     }
 

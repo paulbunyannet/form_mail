@@ -13,7 +13,7 @@ class AddGreetingFieldToFormMailTable extends Migration
     public function up()
     {
         Schema::table('form_mail', function (Blueprint $table) {
-            $table->addColumn('text', 'greeting');
+            $table->addColumn('text', 'greeting')->nullable();
         });
     }
 

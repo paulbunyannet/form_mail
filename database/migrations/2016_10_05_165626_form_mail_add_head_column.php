@@ -13,7 +13,7 @@ class FormMailAddHeadColumn extends Migration
     public function up()
     {
         Schema::table('form_mail', function (Blueprint $table) {
-            $table->addColumn('text', 'head');
+            $table->addColumn('text', 'head')->nullable();
         });
     }
 

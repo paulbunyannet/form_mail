@@ -6,50 +6,36 @@
  * Tests for the FormMailPreflightMessageToRecipient Job class
  *
  * @author Nate Nolting <naten@paulbunyan.net>
- * @package Pbc\FormMail\Tests\Jobs
+ * @package Tests\Jobs
  * @subpackage Subpackage
  */
 
-namespace Pbc\FormMail\Tests\Jobs;
+namespace Tests\Jobs;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Mockery;
 use Pbc\FormMail\Jobs\FormMailPreflightMessageToRecipient;
+use Tests\TestCase;
 
 
 /**
  * Class FormMailPreflightMessageToRecipientTest
- * @package Pbc\FormMail\Tests\Jobs
+ * @package Tests\Jobs
  */
-class FormMailPreflightMessageToRecipientTest extends \TestCase
+class FormMailPreflightMessageToRecipientTest extends TestCase
 {
 
     use DatabaseTransactions;
-    /**
-     *
-     */
-    public function setup()
-    {
-        parent::setUp();
-    }
-
-    /**
-     *
-     */
-    public function tearDown()
-    {
-        parent::tearDown();
-        Mockery::close();
-    }
 
     /**
      * Test to make sure if message_to_recipient does not contain html or body that an exception is thrown
      *
      * @test
-     * @expectedException \Exception
-     * @expectedExceptionMessage Missing body key in message_to_recipient
      */
     public function handle_throws_an_exception_if_there_is_no_body_key_in_message_to_recipient()
     {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Missing body key in message_to_recipient');
+
         $formMail = Mockery::mock('Pbc\FormMail\FormMail');
         $this->app->instance('Pbc\FormMail\FormMail', $formMail);
         $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_recipient')->andReturn(['key1' => 'bla bla bla']);
@@ -84,12 +70,12 @@ class FormMailPreflightMessageToRecipientTest extends \TestCase
         $formMail->shouldReceive('save');
         $formMail->shouldReceive('setAttribute');
         $premailerMock = Mockery::mock('\\Pbc\\Premailer');
-        
+
         $this->app->instance('Pbc\FormMail\FormMail', $formMail);
         $formMail->shouldReceive('getAttribute')->zeroOrMoreTimes()->with('message_to_recipient')->andReturn(['body' => 'bla bla bla', 'subject' => 'subject of message', 'branding' => 'bla bla bla']);
         $premailerMock->shouldReceive('html')->once()->andReturn(['html' => 'bla bla html', 'text' => 'bla bla bla text']);
         $job = new FormMailPreflightMessageToRecipient($formMail, $premailerMock);
-        
+
         $this->assertNull($job->handle());
 
     }

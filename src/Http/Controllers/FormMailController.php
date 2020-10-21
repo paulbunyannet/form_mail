@@ -93,6 +93,11 @@ class FormMailController extends \Illuminate\Routing\Controller
             $return['error'] = $validator->errors()->all();
             return Response::json($return);
         }
+        
+        $request->request->add(['time' => now()->toString()]);
+        $fields = $request->get('fields');
+        array_push($fields, 'time');
+        $request->request->set('fields', $fields);
 
         // make form name
         $this->helper

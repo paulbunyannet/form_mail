@@ -22,7 +22,7 @@
         "guzzlehttp/guzzle": "~6.0",
         "laravel/framework": "~7.0",
         "paulbunyannet/premailer": "^1.0",
-        "paulbunyannet/bandolier": "1.6.5",
+        "paulbunyannet/bandolier": "1.7.*",
         "paulbunyannet/form_mail_template": "1.04.x",
         "mustache/mustache": "^2.11",
         "brandonwamboldt/utilphp": "1.1.*",

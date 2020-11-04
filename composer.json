@@ -19,8 +19,8 @@
     },
     "require": {
         "php": ">=7.4",
-        "guzzlehttp/guzzle": "~6.0",
-        "laravel/framework": "~7.0",
+        "guzzlehttp/guzzle": "^7.0.1",
+        "laravel/framework": "^8.0",
         "paulbunyannet/premailer": "^1.0",
         "paulbunyannet/bandolier": "1.7.*",
         "paulbunyannet/form_mail_template": "1.04.x",
@@ -34,7 +34,7 @@
         "codeception/codeception": "^4.1",
         "codeception/module-asserts": "^1.0.0",
         "codeception/module-laravel5": "^1.1",
-        "phpunit/phpunit": "8.5.8",
+        "phpunit/phpunit": "^9.0",
         "mockery/mockery": "^1.4"
     },
     "minimum-stability": "stable"

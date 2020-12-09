@@ -13,6 +13,7 @@
 namespace Tests\Helpers;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\Request;
 use Pbc\FormMail\Helpers\FormMailHelper;
 use Pbc\FormMail\Http\Controllers\FormMailController;
 use Tests\TestCase;
@@ -216,7 +217,7 @@ class FormMailHelperTest extends TestCase
             'something-label' => 'Foo Bar Bazz',
             'fields' => ['something']
         ];
-        $request = \Mockery::mock();
+        $request = \Mockery::mock(Request::class);
         $request->shouldReceive('input')->once()->with('fields')->andReturn($input['fields']);
         $request->shouldReceive('input')->twice()->with('something-label')->andReturn($input['something-label']);
         $request->shouldReceive('input')->twice()->with('something')->andReturn($input['something']);
@@ -240,7 +241,7 @@ class FormMailHelperTest extends TestCase
     public function fieldsWillReturnArrayThatIsAlreadySet()
     {
         $helper = new FormMailHelper();
-        $request = null;
+        $request = new Request();
         $input = [
             [
                 'value' => 'fo bar bazz',

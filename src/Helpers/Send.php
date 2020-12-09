@@ -4,16 +4,12 @@ namespace Pbc\FormMail\Helpers;
 
 use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\FormMail;
-use Pbc\FormMail\Helpers\FormMailHelper;
 use Pbc\FormMail\Http\Controllers\FormMailController;
 
 class Send
 {
-
     /**
-     * Send messages out to recipient
-     *
-     * @param \Pbc\FormMail\FormMail $formMailModel
+     * @param FormMail $formMailModel
      * @throws \Exception
      */
     public static function send(FormMail $formMailModel)
@@ -60,6 +56,4 @@ class Send
             throw $ex;
         }
     }
-
-
 }

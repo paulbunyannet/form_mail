@@ -15,7 +15,7 @@ class Head {
      * @param $data
      * @return string
      */
-    public static function makeHead($data)
+    public static function makeHead(array $data) : string
     {
         $inject = \FormMailHelper::languageInject($data);
         $output = [];

@@ -16,7 +16,7 @@ class Greeting {
      * @param array $data
      * @return string
      */
-    public static function makeGreeting($data)
+    public static function makeGreeting(array $data) : string
     {
         if (!array_key_exists('greeting', $data)) {
             $data['greeting'] = self::defaultGreeting();

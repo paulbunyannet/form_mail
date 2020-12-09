@@ -7,11 +7,9 @@ namespace Pbc\FormMail\Traits;
  * @package Pbc\FormMail\Traits
  * @codeCoverageIgnore
  */
-trait RulesTrait {
+trait RulesTrait
+{
 
-    /**
-     *
-     */
     public function prepRules()
     {
         $this->rules = \FormMailHelper::prepRules($this->rules);

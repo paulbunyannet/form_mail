@@ -8,15 +8,14 @@ namespace Pbc\FormMail\Helpers;
  */
 class Confirmation implements HelperContract
 {
-
     /**
-     * @param $data
-     * @return boolean
+     * @param array $data
+     * @return bool
      */
-    public static function get(array $data = [])
+    public static function get(array $data = []) : bool
     {
         $key = strtolower(__CLASS__);
-        if(array_key_exists($key, $data)) {
+        if (array_key_exists($key, $data)) {
             return $data[$key];
         }
 
@@ -24,9 +23,9 @@ class Confirmation implements HelperContract
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
-    public static function getDefault()
+    public static function getDefault() : bool
     {
         return \Config::get('form_mail.confirmation');
     }

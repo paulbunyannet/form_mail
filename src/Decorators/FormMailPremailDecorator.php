@@ -16,16 +16,14 @@ use Pbc\Premailer;
 class FormMailPremailDecorator
 {
 
-    protected $premailer;
+    protected Premailer $premailer;
 
     public function __construct(Premailer $premailer, array $data = [])
     {
         $this->premailer = $premailer;
 
-        if ($data) {
-            foreach ($data as $key => $value) {
-                $this->{$key} = $value;
-            }
+        foreach ($data as $key => $value) {
+            $this->{$key} = $value;
         }
     }
 
@@ -35,25 +33,20 @@ class FormMailPremailDecorator
      * @param array $data
      * @return array
      */
-    public function premailer(array $data = [])
+    public function premailer(array $data = []) : array
     {
-        // send out message to recipient
-        // try and send the message with layout through Premailer
         try {
-            $message = $this->premailer->html(
+            return $this->premailer->html(
                 \View::make('pbc_form_mail_template::layout')->with(
                     'data',
                     $data
                 )->render()
             );
         } catch (\Exception $ex) {
-            $message = [
+            return [
                 'html' => \View::make('pbc_form_mail_template::layout')->with('data', $data)->render(),
                 'text' => ''
             ];
         }
-
-        return $message;
     }
-
 }

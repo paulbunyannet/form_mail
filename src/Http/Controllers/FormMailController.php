@@ -5,6 +5,7 @@ namespace Pbc\FormMail\Http\Controllers;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Pbc\Bandolier\Type\Encoded;
 use Pbc\FormMail\Helpers\Confirmation;
@@ -13,7 +14,6 @@ use Pbc\FormMail\Helpers\Queue;
 use Pbc\FormMail\Traits\MessageTrait;
 use Pbc\FormMail\Traits\QueueTrait;
 use Pbc\FormMail\Traits\RulesTrait;
-use Pbc\FormMail\Traits\SendTrait;
 use Pbc\Premailer;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Validator;
  */
 class FormMailController extends \Illuminate\Routing\Controller
 {
-    use MessageTrait, QueueTrait, RulesTrait, SendTrait, ValidatesRequests, AuthorizesRequests, DispatchesJobs;
+    use MessageTrait, QueueTrait, RulesTrait, ValidatesRequests, AuthorizesRequests, DispatchesJobs;
 
     /**
      * path to resources
@@ -41,18 +41,15 @@ class FormMailController extends \Illuminate\Routing\Controller
      */
     const SENDER = "sender";
 
-    /**
-     * @var array
-     */
-    protected $rules = [];
-    /**
-     * @var Premailer
-     */
-    protected $premailer;
+
+    protected array $rules = [];
+
+    protected Premailer $premailer;
 
     /**
      * FormMailController constructor.
      * @param Premailer $premailer
+     * @param FormMailHelper $helper
      */
     public function __construct(Premailer $premailer, FormMailHelper $helper)
     {
@@ -64,10 +61,9 @@ class FormMailController extends \Illuminate\Routing\Controller
     /**
      * @param Request $request
      * @param array $data
-     * @return mixed
-     * @throws \Illuminate\Validation\ValidationException
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function requestHandler(Request $request, $data = [])
+    public function requestHandler(Request $request, array $data = []) : JsonResponse
     {
         $return = [
             'queue' => Queue::getDefault(),

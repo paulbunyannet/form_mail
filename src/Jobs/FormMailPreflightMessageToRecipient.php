@@ -11,13 +11,14 @@ use Pbc\Premailer as Preflight;
 class FormMailPreflightMessageToRecipient
 {
     use InteractsWithQueue, SerializesModels, Queueable;
-    public $formMail;
-    public $preflight;
+
+    public FormMail $formMail;
+    public Preflight $preflight;
 
     /**
-     * Create a new job instance.
-     *
-     * @return void
+     * FormMailPreflightMessageToRecipient constructor.
+     * @param FormMail $formMail
+     * @param Preflight $preflight
      */
     public function __construct(FormMail $formMail, Preflight $preflight)
     {
@@ -46,6 +47,5 @@ class FormMailPreflightMessageToRecipient
         } else {
             throw new \Exception('Missing body key in message_to_recipient');
         }
-
     }
 }

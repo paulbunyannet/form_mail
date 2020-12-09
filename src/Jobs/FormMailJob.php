@@ -20,13 +20,11 @@ class FormMailJob
 {
     use Queueable;
 
-    public $formMail;
-    /**
-     * @var Premailer Premailer
-     */
-    public $preflight;
+    public FormMail $formMail;
 
-    public $preflighted = [];
+    public Premailer $preflight;
+
+    public array $preflighted = [];
 
     /**
      * FormMailSend constructor.

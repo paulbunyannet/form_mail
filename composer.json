@@ -21,7 +21,7 @@
         "php": ">=7.4",
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.0",
-        "paulbunyannet/premailer": "dev-master",
+        "paulbunyannet/premailer": "^2.0",
         "paulbunyannet/bandolier": "1.7.*",
         "paulbunyannet/form_mail_template": "1.04.x",
         "mustache/mustache": "^2.11",

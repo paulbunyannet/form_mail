@@ -30,7 +30,7 @@ class Message
         // a key for recipient in it.
 
         foreach (array_keys($data) as $key) {
-            $value = Encoded::getThingThatIsEncoded($data[$key], FormMailController::RECIPIENT);
+            $value = is_string($data[$key]) ? Encoded::getThingThatIsEncoded($data[$key], FormMailController::RECIPIENT) : $data[$key];
             // @codeCoverageIgnoreStart
             if ($value !== $data[$key]) {
                 $data[$key] = $value;
@@ -71,7 +71,7 @@ class Message
         // check if they are encoded and that there's
         // a key for recipient in it.
         foreach (array_keys($data) as $key) {
-            $value = Encoded::getThingThatIsEncoded($data[$key], FormMailController::SENDER);
+            $value = is_string($data[$key]) ? Encoded::getThingThatIsEncoded($data[$key], FormMailController::SENDER) : $data[$key];
             // @codeCoverageIgnoreStart
             if ($value !== $data[$key]) {
                 $data[$key] = $value;

@@ -18,7 +18,7 @@ class Send
         // If it fails then return the exception as the
         // response.
         try {
-            $recipientSubject = Encoded::getThingThatIsEncoded($formMailModel->subject, FormMailController::RECIPIENT);
+            $recipientSubject = is_string($formMailModel->subject) ? Encoded::getThingThatIsEncoded($formMailModel->subject, FormMailController::RECIPIENT) : $formMailModel->subject;
             $recipientTo = $formMailModel->{FormMailController::RECIPIENT};
             $recipientFrom = $formMailModel->{FormMailController::SENDER};
             \Mail::send(
@@ -37,7 +37,7 @@ class Send
                 // try and send out message to sender for conformation.
                 // If it fails then return the exception as the
                 // response.
-                $senderSubject = Encoded::getThingThatIsEncoded($formMailModel->subject, FormMailController::SENDER);
+                $senderSubject = is_string($formMailModel->subject) ? Encoded::getThingThatIsEncoded($formMailModel->subject, FormMailController::SENDER) : $formMailModel->subject;
                 $senderTo = $formMailModel->{FormMailController::SENDER};
                 $senderFrom = $formMailModel->{FormMailController::RECIPIENT};
                 \Mail::send(

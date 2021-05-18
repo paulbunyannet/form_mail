@@ -1,13 +1,13 @@
 # ************************************************************
 # Sequel Ace SQL dump
-# Version 2077
+# Version 2121
 #
 # https://sequel-ace.com/
 # https://github.com/Sequel-Ace/Sequel-Ace
 #
-# Host: 127.0.0.1 (MySQL 5.7.31)
+# Host: 127.0.0.1 (MySQL 5.7.34)
 # Database: homestead
-# Generation Time: 2020-09-17 12:41:47 +0000
+# Generation Time: 2021-05-18 12:20:12 +0000
 # ************************************************************
 
 
@@ -32,17 +32,17 @@ CREATE TABLE `form_mail` (
   `resource` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `sender` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `recipient` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `fields` text COLLATE utf8mb4_unicode_ci,
-  `message_to_recipient` text COLLATE utf8mb4_unicode_ci,
-  `message_to_sender` text COLLATE utf8mb4_unicode_ci,
+  `fields` longtext COLLATE utf8mb4_unicode_ci,
+  `message_to_recipient` longtext COLLATE utf8mb4_unicode_ci,
+  `message_to_sender` longtext COLLATE utf8mb4_unicode_ci,
   `subject` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `message_sent_to_recipient` tinyint(1) DEFAULT NULL,
   `confirmation_sent_to_sender` tinyint(1) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `branding` text COLLATE utf8mb4_unicode_ci,
-  `head` text COLLATE utf8mb4_unicode_ci,
-  `greeting` text COLLATE utf8mb4_unicode_ci,
+  `branding` longtext COLLATE utf8mb4_unicode_ci,
+  `head` longtext COLLATE utf8mb4_unicode_ci,
+  `greeting` longtext COLLATE utf8mb4_unicode_ci,
   `confirmation` tinyint(1) NOT NULL DEFAULT '0',
   `queue` tinyint(1) NOT NULL DEFAULT '0',
   `custom_request_body` longtext COLLATE utf8mb4_unicode_ci,
@@ -94,7 +94,8 @@ VALUES
 	(21,'2016_10_31_200100_add_confirmation_column_to_form_mail_table',1),
 	(22,'2016_10_31_201854_add_queue_column_to_form_mail_table',1),
 	(23,'2017_09_05_201855_add_custom_request_body_column_to_form_mail_table',1),
-	(24,'2020_09_16_192608_create_jobs_table',1);
+	(24,'2020_09_16_192608_create_jobs_table',1),
+	(25,'2021_05_17_160833_fix_form_mail_column_types',2);
 
 /*!40000 ALTER TABLE `migrations` ENABLE KEYS */;
 UNLOCK TABLES;
